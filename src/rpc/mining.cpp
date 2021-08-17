@@ -61,7 +61,7 @@ static UniValue GetNetworkHashPS(int lookup, int height) {
 
     // If lookup is -1, then use blocks since last difficulty change.
     if (lookup <= 0)
-        lookup = pb->nHeight % Params().GetConsensus().DifficultyAdjustmentInterval(pb->nHeight) + 1;
+        lookup = pb->nHeight % Params().GetConsensus().DifficultyAdjustmentInterval() + 1;
 
     // If lookup is larger than chain, then set it to chain length.
     if (lookup > pb->nHeight)
@@ -593,7 +593,7 @@ static UniValue getstakingstatus(const JSONRPCRequest& request)
 #endif
 
     bool staking = walletStakingEnabled && lastCoinStakeSearchInterval && nWeight;
-    bool hasConnections = node.connman->GetNodeCount(CConnman::CONNECTIONS_ALL) >= 4;
+    bool hasConnections = node.connman->GetNodeCount(CConnman::CONNECTIONS_ALL) >= 1;
     bool isSynced = !::ChainstateActive().IsInitialBlockDownload();
     bool hasCoins = nWeight != 0;
 

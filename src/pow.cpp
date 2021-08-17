@@ -51,39 +51,39 @@ inline arith_uint256 GetLimit(int nHeight, const Consensus::Params& params, bool
 
 unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& params, bool fProofOfStake)
 {
-    unsigned int nTargetLimit = GetLimit(pindexLast ? pindexLast->nHeight+1 : 0, params, fProofOfStake).GetCompact();
+    assert(pindexLast != nullptr);
+    unsigned int nProofOfWorkLimit = UintToArith256(fProofOfStake ? params.posLimit : params.powLimit).GetCompact();
 
-    // genesis block
-    if (pindexLast == NULL)
-        return nTargetLimit;
-
-    // first block
-    const CBlockIndex* pindexPrev = GetLastBlockIndex(pindexLast, fProofOfStake);
-    if (pindexPrev->pprev == NULL)
-        return nTargetLimit;
-
-    // second block
-    const CBlockIndex* pindexPrevPrev = GetLastBlockIndex(pindexPrev->pprev, fProofOfStake);
-    if (pindexPrevPrev->pprev == NULL)
-        return nTargetLimit;
-
-    if (params.fPowAllowMinDifficultyBlocks)
+    // Only change once per difficulty adjustment interval
+    if ((pindexLast->nHeight+1) % params.DifficultyAdjustmentInterval() != 0)
     {
-        // Special difficulty rule for testnet:
-        // If the new block's timestamp is more than 2* 10 minutes
-        // then allow mining of a min-difficulty block.
-        if (pblock->GetBlockTime() > pindexLast->GetBlockTime() + params.nPowTargetSpacing*2) {                
-            return nTargetLimit;
-        } else {
-            // Return the last non-special-min-difficulty-rules-block
-            const CBlockIndex* pindex = pindexLast;
-            while (pindex->pprev && pindex->nHeight % params.DifficultyAdjustmentInterval(pindex->nHeight) != 0 && pindex->nBits == nTargetLimit)
-                pindex = pindex->pprev;
-            return pindex->nBits;
+        if (params.fPowAllowMinDifficultyBlocks)
+        {
+            // Special difficulty rule for testnet:
+            // If the new block's timestamp is more than 2* 10 minutes
+            // then allow mining of a min-difficulty block.
+            if (pblock->GetBlockTime() > pindexLast->GetBlockTime() + params.nPowTargetSpacing*2)
+                return nProofOfWorkLimit;
+            else
+            {
+                // Return the last non-special-min-difficulty-rules-block
+                const CBlockIndex* pindex = pindexLast;
+                while (pindex->pprev && pindex->nHeight % params.DifficultyAdjustmentInterval() != 0 && pindex->nBits == nProofOfWorkLimit)
+                    pindex = pindex->pprev;
+                return pindex->nBits;
+            }
         }
+        return pindexLast->nBits;
     }
 
-    return CalculateNextWorkRequired(pindexPrev, pindexPrevPrev->GetBlockTime(), params, fProofOfStake);
+    // Go back by what we want to be 14 days worth of blocks
+    int nHeightFirst = pindexLast->nHeight - (params.DifficultyAdjustmentInterval()-1);
+    assert(nHeightFirst >= 0);
+    const CBlockIndex* pindexFirst = pindexLast->GetAncestor(nHeightFirst);
+    assert(pindexFirst);
+
+    return CalculateNextWorkRequired(pindexLast, pindexFirst->GetBlockTime(), params, fProofOfStake);
+
 }
 
 unsigned int CalculateNextWorkRequired(const CBlockIndex* pindexLast, int64_t nFirstBlockTime, const Consensus::Params& params, bool fProofOfStake)
@@ -97,27 +97,21 @@ unsigned int CalculateNextWorkRequired(const CBlockIndex* pindexLast, int64_t nF
     }
 
     // Limit adjustment step
-    int64_t nTargetSpacing;
-    if (pindexLast && pindexLast->nHeight < params.BTCRewardMatchHeight)
-        nTargetSpacing = STAKE_V1_TARGET_SPACING;
-    else
-        nTargetSpacing = params.nPowTargetSpacing;
-    int64_t nActualSpacing = pindexLast->GetBlockTime() - nFirstBlockTime;
-    int64_t nInterval = params.DifficultyAdjustmentInterval(pindexLast->nHeight + 1);
+    int64_t nActualTimespan = pindexLast->GetBlockTime() - nFirstBlockTime;
+    if (nActualTimespan < params.nPowTargetTimespan/4)
+        nActualTimespan = params.nPowTargetTimespan/4;
+    if (nActualTimespan > params.nPowTargetTimespan*4)
+        nActualTimespan = params.nPowTargetTimespan*4;
     
     // Retarget
-    const arith_uint256 bnTargetLimit = GetLimit(pindexLast->nHeight + 1, params, fProofOfStake);
+    const arith_uint256 bnPowLimit = UintToArith256(fProofOfStake ? params.posLimit : params.powLimit);
     arith_uint256 bnNew;
     bnNew.SetCompact(pindexLast->nBits);
+    bnNew *= nActualTimespan;
+    bnNew /= params.nPowTargetTimespan;
 
-    if (nActualSpacing < 0)
-        nActualSpacing = nTargetSpacing;
-    if (nActualSpacing > nTargetSpacing * 20)
-        nActualSpacing = nTargetSpacing * 20;
-    bnNew = mul_exp(bnNew, 2 * (nActualSpacing - nTargetSpacing) / 16, (nInterval + 1) * nTargetSpacing / 16);
-
-    if (bnNew <= 0 || bnNew > bnTargetLimit)
-        bnNew = bnTargetLimit;
+    if (bnNew > bnPowLimit)
+        bnNew = bnPowLimit;
 
     return bnNew.GetCompact();
 }
@@ -131,7 +125,7 @@ bool CheckProofOfWork(uint256 hash, unsigned int nBits, const Consensus::Params&
     bnTarget.SetCompact(nBits, &fNegative, &fOverflow);
 
     // Check range
-    if (fNegative || bnTarget == 0 || fOverflow || bnTarget > UintToArith256(params.powLimit))
+    if (fNegative || bnTarget == 0 || fOverflow || bnTarget > UintToArith256(fProofOfStake ? params.posLimit : params.powLimit))
         return false;
 
     // Check proof of work matches claimed amount

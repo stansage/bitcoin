@@ -19,8 +19,6 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
 
-#include "serialize.h"
-#include <streams.h>
 
 static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesisOutputScript, uint32_t nTime, uint32_t nNonce, uint32_t nBits, int32_t nVersion, const CAmount& genesisReward)
 {
@@ -71,27 +69,24 @@ public:
         consensus.signet_blocks = false;
         consensus.signet_challenge.clear();
         consensus.nSubsidyHalvingInterval = 210000;
-        consensus.BIP16Exception = uint256S("0x00000740f289b7ed8f99c50d4b0005534fde2337b04d193583f73242118be238");
+        consensus.BIP16Exception = uint256S("0x00000740f289b7ed8f99c50d4b0005534fde2337b04d193583f73242118be238"); //genesis block hash
         consensus.BIP34Height = 1;
-        consensus.BIP34Hash = uint256S("0x");
+        consensus.BIP34Hash = uint256S("0x000005a3d6d73b959855a7339e9ed12f4e48f7585839448951abd8f0611c910d");// 1 block hash
         consensus.BIP65Height = 1;
         consensus.BIP66Height = 1;
         consensus.CSVHeight = 1;
         consensus.SegwitHeight = 1;
         consensus.MinBIP9WarningHeight = consensus.SegwitHeight + consensus.nMinerConfirmationWindow;
-        consensus.BTCRewardMatchStep = 40000;
-        consensus.BTCRewardMatchHeight = 3 * consensus.BTCRewardMatchStep;
-        consensus.BTCDiffAdjHeight = 130000;
         consensus.BTCColdStakeEnableHeight = 1000;
         consensus.powLimit = uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-        consensus.posLimit = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+        consensus.posLimit = uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.nPowTargetTimespan = 60; // every 1 minutes
         consensus.nPowTargetSpacing = 5;
         consensus.fPowAllowMinDifficultyBlocks = false;
         consensus.fPowNoRetargeting = false;
         consensus.fPoSNoRetargeting = false;
-        consensus.nRuleChangeActivationThreshold = 1916; // 95% of 2016
-        consensus.nMinerConfirmationWindow = 2016; // nPowTargetTimespan / nPowTargetSpacing
+        consensus.nRuleChangeActivationThreshold = 11; // 95% of 12
+        consensus.nMinerConfirmationWindow = nPowTargetTimespan / nPowTargetSpacing;
         consensus.nLastPOWBlock = 100;
         consensus.nMPoSRewardRecipients = 10;
         consensus.nFirstMPoSBlock = consensus.nLastPOWBlock + 
@@ -109,8 +104,8 @@ public:
         consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nStartTime = 1199145601; // January 1, 2008
         consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nTimeout = 1230767999; // December 31, 2008
 
-        consensus.nMinimumChainWork = uint256S("0x"); //block 236,425
-        consensus.defaultAssumeValid = uint256S("0x"); //block 236,425
+        consensus.nMinimumChainWork = uint256S("0x0000000000000000000000000000000000000000000000000000000000200011"); //block 1
+        consensus.defaultAssumeValid = uint256S("0x"); //block 1
 
         /**
          * The message start string is designed to be unlikely to occur in normal data.
@@ -155,7 +150,7 @@ public:
 
         checkpointData = {
             {
-                { 5, 	 uint256S("0x000001b674dd8d63d3c9e4c078be5cdb5edaf3155eb293c3bdf04769e7ae6c61")},
+                { 5, 	 uint256S("0x00000be6b944229504e0883b59833751d7628df77b53da5ca9aacad295af0671")},
             }
         };
 
@@ -186,9 +181,6 @@ public:
         consensus.CSVHeight = 1;
         consensus.SegwitHeight = 1;
         consensus.MinBIP9WarningHeight = consensus.SegwitHeight + consensus.nMinerConfirmationWindow;
-        consensus.BTCRewardMatchStep = 400;
-        consensus.BTCRewardMatchHeight = 3 * consensus.BTCRewardMatchStep;
-        consensus.BTCDiffAdjHeight = 1500;
         consensus.BTCColdStakeEnableHeight = 2000;
         consensus.powLimit = uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.posLimit = uint256S("0000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
@@ -395,9 +387,6 @@ public:
         consensus.CSVHeight = 432; // CSV activated on regtest (Used in rpc activation tests)
         consensus.SegwitHeight = 0; // SEGWIT is always activated on regtest unless overridden
         consensus.MinBIP9WarningHeight = 0;
-        consensus.BTCRewardMatchStep = 400;
-        consensus.BTCRewardMatchHeight = 3 * consensus.BTCRewardMatchStep;
-        consensus.BTCDiffAdjHeight = 1500;
         consensus.BTCColdStakeEnableHeight = 2000;
         consensus.powLimit = uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.posLimit = uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
