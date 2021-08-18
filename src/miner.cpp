@@ -675,8 +675,8 @@ void ThreadStakeMiner(CWallet *pwallet, CConnman* connman, ChainstateManager* ch
                                     //or receiving more stale/orphan blocks than normal. Use at your own risk.
                                     UninterruptibleSleep(std::chrono::milliseconds{100});
                                 } else {
-                                    //too early, so wait 3 seconds and try again
-                                    UninterruptibleSleep(std::chrono::milliseconds{3000});
+                                    //too early, so wait 1 second and try again
+                                    UninterruptibleSleep(std::chrono::milliseconds{1000});
                                 }
                                 continue;
                             }

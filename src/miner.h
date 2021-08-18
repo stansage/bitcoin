@@ -37,11 +37,11 @@ static const bool DEFAULT_STAKE_CACHE = true;
 //How many seconds to look ahead and prepare a block for staking
 //Look ahead up to 3 "timeslots" in the future, 48 seconds
 //Reduce this to reduce computational waste for stakers, increase this to increase the amount of time available to construct full blocks
-static const int32_t MAX_STAKE_LOOKAHEAD = 16 * 3;
+static const int32_t MAX_STAKE_LOOKAHEAD = 5;
 
 //How often to try to stake blocks in milliseconds
 //Note this is overridden for regtest mode
-static const int32_t STAKER_POLLING_PERIOD = 5000;
+static const int32_t STAKER_POLLING_PERIOD = 1000;
 
 //How much time to spend trying to process transactions when using the generate RPC call
 static const int32_t POW_MINER_MAX_TIME = 60;
