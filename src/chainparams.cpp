@@ -160,6 +160,7 @@ public:
             /* nTxCount */ 4,
             /* dTxRate  */ 0.0261437908496732,
         };
+	nMinimumConnectionsForStaking = 1;
     }
 };
 

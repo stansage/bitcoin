@@ -571,14 +571,15 @@ void ThreadStakeMiner(CWallet *pwallet, CConnman* connman, ChainstateManager* ch
         }
         // Don't disable PoS mining for no connections if in regtest mode
         if (!regtestMode && !gArgs.GetBoolArg("-emergencystaking", false)) {
-            while (connman->GetNodeCount(CConnman::CONNECTIONS_ALL) <= 1 || ::ChainstateActive().IsInitialBlockDownload()) {
+            while (connman->GetNodeCount(CConnman::CONNECTIONS_ALL) <= Params().MinimumConnectionsForStaking() ||
+                   ::ChainstateActive().IsInitialBlockDownload()) {
                 pwallet->m_last_coin_stake_search_interval = 0;
                 fTryToSync = true;
                 UninterruptibleSleep(std::chrono::milliseconds{1000});
             }
             if (fTryToSync) {
                 fTryToSync = false;
-                if (connman->GetNodeCount(CConnman::CONNECTIONS_ALL) <= 1 ||
+                if (connman->GetNodeCount(CConnman::CONNECTIONS_ALL) <= Params().MinimumConnectionsForStaking() ||
                     ::ChainActive().Tip()->GetBlockTime() < GetTime() - Params().GetConsensus().nPowTargetSpacing ||
                     !::ChainActive().Tip()->HaveTxsDownloaded() ||
                     !::ChainActive().Tip()->IsValid(BLOCK_VALID_TRANSACTIONS)) {
