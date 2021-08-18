@@ -71,12 +71,11 @@ public:
         consensus.nSubsidyHalvingInterval = 210000;
         consensus.BIP16Exception = uint256S("0x00000740f289b7ed8f99c50d4b0005534fde2337b04d193583f73242118be238"); //genesis block hash
         consensus.BIP34Height = 1;
-        consensus.BIP34Hash = uint256S("0x000005a3d6d73b959855a7339e9ed12f4e48f7585839448951abd8f0611c910d");// 1 block hash
+        consensus.BIP34Hash = uint256S("0x000005cb88ef73f2fa282ee15f84be411bdeb379a0ea6df32a4679941da466aa");// 1 block hash
         consensus.BIP65Height = 1;
         consensus.BIP66Height = 1;
         consensus.CSVHeight = 1;
         consensus.SegwitHeight = 1;
-        consensus.MinBIP9WarningHeight = consensus.SegwitHeight + consensus.nMinerConfirmationWindow;
         consensus.BTCColdStakeEnableHeight = 1000;
         consensus.powLimit = uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.posLimit = uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
@@ -86,7 +85,8 @@ public:
         consensus.fPowNoRetargeting = false;
         consensus.fPoSNoRetargeting = false;
         consensus.nRuleChangeActivationThreshold = 11; // 95% of 12
-        consensus.nMinerConfirmationWindow = consensus.nPowTargetTimespan / consensus.nPowTargetSpacing;
+	consensus.nMinerConfirmationWindow = consensus.DifficultyAdjustmentInterval();
+	consensus.MinBIP9WarningHeight = consensus.SegwitHeight + consensus.nMinerConfirmationWindow;
         consensus.nLastPOWBlock = 100;
         consensus.nMPoSRewardRecipients = 10;
         consensus.nFirstMPoSBlock = consensus.nLastPOWBlock + 
@@ -104,8 +104,8 @@ public:
         consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nStartTime = 1199145601; // January 1, 2008
         consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nTimeout = 1230767999; // December 31, 2008
 
-        consensus.nMinimumChainWork = uint256S("0x0000000000000000000000000000000000000000000000000000000000200011"); //block 1
-        consensus.defaultAssumeValid = uint256S("0x"); //block 1
+        consensus.nMinimumChainWork = uint256S("0x0000000000000000000000000000000000000000000000000000000000200020"); //block 1
+        consensus.defaultAssumeValid = uint256S("0x000005cb88ef73f2fa282ee15f84be411bdeb379a0ea6df32a4679941da466aa"); //block 1
 
         /**
          * The message start string is designed to be unlikely to occur in normal data.
@@ -160,7 +160,7 @@ public:
             /* nTxCount */ 4,
             /* dTxRate  */ 0.0261437908496732,
         };
-	nMinimumConnectionsForStaking = 1;
+	nMinimumConnectionsForStaking = 4;
     }
 };
 
@@ -181,7 +181,6 @@ public:
         consensus.BIP66Height = 1;
         consensus.CSVHeight = 1;
         consensus.SegwitHeight = 1;
-        consensus.MinBIP9WarningHeight = consensus.SegwitHeight + consensus.nMinerConfirmationWindow;
         consensus.BTCColdStakeEnableHeight = 2000;
         consensus.powLimit = uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.posLimit = uint256S("0000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
@@ -192,6 +191,7 @@ public:
         consensus.fPoSNoRetargeting = false;
         consensus.nRuleChangeActivationThreshold = 1512; // 75% for testchains
         consensus.nMinerConfirmationWindow = 2016; // nPowTargetTimespan / nPowTargetSpacing
+	consensus.MinBIP9WarningHeight = consensus.SegwitHeight + consensus.nMinerConfirmationWindow;
         consensus.nLastPOWBlock = 501;
         consensus.nMPoSRewardRecipients = 10;
         consensus.nFirstMPoSBlock = consensus.nLastPOWBlock + 
@@ -259,6 +259,7 @@ public:
             /* nTxCount */ 0,
             /* dTxRate  */ 0.0,
         };
+        nMinimumConnectionsForStaking = 2;
     }
 };
 
@@ -367,6 +368,7 @@ public:
         fRequireStandard = true;
         m_is_test_chain = true;
         m_is_mockable_chain = false;
+	nMinimumConnectionsForStaking = 1;
     }
 };
 
@@ -449,6 +451,7 @@ public:
             0,
             0
         };
+	nMinimumConnectionsForStaking = 1;
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,65);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,78);
