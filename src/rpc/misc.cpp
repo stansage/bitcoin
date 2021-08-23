@@ -8,6 +8,7 @@
 #include <index/txindex.h>
 #include <interfaces/chain.h>
 #include <key_io.h>
+#include <masternode/masternode-sync.h>
 #include <node/context.h>
 #include <outputtype.h>
 #include <rpc/blockchain.h>
@@ -692,6 +693,47 @@ static RPCHelpMan getindexinfo()
     };
 }
 
+static RPCHelpMan mnsync()
+{
+    return RPCHelpMan{"mnsync",
+            {"\nReturns the sync status, updates to the next step or resets it entirely.\n"},
+            {
+                {"command", RPCArg::Type::STR, RPCArg::Optional::NO, "The command to issue (status|next|reset)"},
+            },
+            RPCResult{RPCResult::Type::STR, "result", "Result"},
+            RPCExamples{
+                HelpExampleCli("mnsync", "status")
+                + HelpExampleRpc("mnsync", "status")
+            },
+        [&](const RPCHelpMan& self, const JSONRPCRequest& request) -> UniValue
+{
+
+    NodeContext& node = EnsureNodeContext(request.context);
+    std::string strMode = request.params[0].get_str();
+
+    if(strMode == "status") {
+        UniValue objStatus(UniValue::VOBJ);
+        objStatus.pushKV("IsBlockchainSynced", masternodeSync.IsBlockchainSynced());
+        objStatus.pushKV("IsSynced", masternodeSync.IsSynced());
+        return objStatus;
+    }
+
+    if(strMode == "next")
+    {
+        ++masternodeSync.RequestedMasternodeAssets;
+        return "success";
+    }
+
+    if(strMode == "reset")
+    {
+        masternodeSync.Reset();
+        return "success";
+    }
+    return "failure";
+},
+    };
+}
+
 void RegisterMiscRPCCommands(CRPCTable &t)
 {
 // clang-format off
@@ -707,6 +749,8 @@ static const CRPCCommand commands[] =
     { "util",               "verifymessage",          &verifymessage,          {"address","signature","message"} },
     { "util",               "signmessagewithprivkey", &signmessagewithprivkey, {"privkey","message"} },
     { "util",               "getindexinfo",           &getindexinfo,           {"index_name"} },
+
+    { "crown",              "mnsync",                 &mnsync,                 {"command"} },
 
     /* Not shown in help */
     { "hidden",             "setmocktime",            &setmocktime,            {"timestamp"}},
