@@ -32,6 +32,7 @@ const char *NOTFOUND="notfound";
 const char *FILTERLOAD="filterload";
 const char *FILTERADD="filteradd";
 const char *FILTERCLEAR="filterclear";
+const char *REJECT="reject";
 const char *SENDHEADERS="sendheaders";
 const char *FEEFILTER="feefilter";
 const char *SENDCMPCT="sendcmpct";
@@ -45,7 +46,48 @@ const char *CFHEADERS="cfheaders";
 const char *GETCFCHECKPT="getcfcheckpt";
 const char *CFCHECKPT="cfcheckpt";
 const char *WTXIDRELAY="wtxidrelay";
+
+//! crown types
+const char *BUDGETPROPOSAL = "mprop";
+const char *BUDGETVOTE = "mvote";
+const char *BUDGETVOTESYNC = "mnvs";
+const char *DSEEP = "dseep";
+const char *DSEG = "dseg";
+const char *DSTX = "dstx";
+const char *FINALBUDGET = "fbs";
+const char *FINALBUDGETVOTE = "fbvote";
+const char *GETMNWINNERS = "mnget";
+const char *GETSPORKS = "getsporks";
+const char *MNBROADCAST = "mnb";
+const char *MNBROADCAST2 = "mnb_new";
+const char *MNPING = "mnp";
+const char *MNPING2 = "mnp_new";
+const char *MNSYNCSTATUS = "ssc";
+const char *MNWINNER = "mnw";
+const char *SPORK = "spork";
+const char *BLOCKPROOF = "blockproof";
+
 } // namespace NetMsgType
+
+static const char* ppszTypeName[] = {
+        "ERROR",
+        "tx",
+        "block",
+        "filtered block",
+        "tx lock request",
+        "tx lock vote",
+        "spork",
+        "mn winner",
+        "mn scan error",
+        "mn budget vote",
+        "mn budget proposal",
+        "mn budget finalized",
+        "mn budget finalized vote",
+        "mn quorum",
+        "mn announce",
+        "mn ping",
+        "dstx"
+};
 
 /** All known message types. Keep this in the same order as the list of
  * messages above and in protocol.h.
@@ -72,6 +114,7 @@ const static std::string allNetMessageTypes[] = {
     NetMsgType::FILTERLOAD,
     NetMsgType::FILTERADD,
     NetMsgType::FILTERCLEAR,
+    NetMsgType::REJECT,
     NetMsgType::SENDHEADERS,
     NetMsgType::FEEFILTER,
     NetMsgType::SENDCMPCT,
@@ -85,6 +128,25 @@ const static std::string allNetMessageTypes[] = {
     NetMsgType::GETCFCHECKPT,
     NetMsgType::CFCHECKPT,
     NetMsgType::WTXIDRELAY,
+    //! crown types
+    NetMsgType::BUDGETPROPOSAL,
+    NetMsgType::BUDGETVOTE,
+    NetMsgType::BUDGETVOTESYNC,
+    NetMsgType::DSEEP,
+    NetMsgType::DSEG,
+    NetMsgType::DSTX,
+    NetMsgType::FINALBUDGET,
+    NetMsgType::FINALBUDGETVOTE,
+    NetMsgType::GETMNWINNERS,
+    NetMsgType::GETSPORKS,
+    NetMsgType::MNBROADCAST,
+    NetMsgType::MNBROADCAST2,
+    NetMsgType::MNPING,
+    NetMsgType::MNPING2,
+    NetMsgType::MNSYNCSTATUS,
+    NetMsgType::MNWINNER,
+    NetMsgType::SPORK,
+    NetMsgType::BLOCKPROOF
 };
 const static std::vector<std::string> allNetMessageTypesVec(allNetMessageTypes, allNetMessageTypes+ARRAYLEN(allNetMessageTypes));
 
@@ -174,7 +236,10 @@ std::string CInv::GetCommand() const
     case MSG_FILTERED_BLOCK: return cmd.append(NetMsgType::MERKLEBLOCK);
     case MSG_CMPCT_BLOCK:    return cmd.append(NetMsgType::CMPCTBLOCK);
     default:
-        throw std::out_of_range(strprintf("CInv::GetCommand(): type=%d unknown type", type));
+        if (type >= 1 && type <= ARRAYLEN(ppszTypeName))
+            return ppszTypeName[type];
+        else
+            throw std::out_of_range(strprintf("CInv::GetCommand(): type=%d unknown type", type));
     }
 }
 

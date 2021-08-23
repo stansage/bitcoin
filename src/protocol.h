@@ -181,6 +181,13 @@ extern const char* FILTERADD;
  */
 extern const char* FILTERCLEAR;
 /**
+ * The reject message informs the receiving node that one of its previous
+ * messages has been rejected.
+ * @since protocol version 70002 as described by BIP61.
+ * @see https://bitcoin.org/en/developer-reference#reject
+ */
+extern const char* REJECT;
+/**
  * Indicates that a node prefers to receive new block announcements via a
  * "headers" message rather than an "inv".
  * @since protocol version 70012 as described by BIP130.
@@ -260,6 +267,27 @@ extern const char* CFCHECKPT;
  * @since protocol version 70016 as described by BIP 339.
  */
 extern const char* WTXIDRELAY;
+/**
+ * crown command set
+ */
+extern const char* BUDGETPROPOSAL;
+extern const char* BUDGETVOTE;
+extern const char* BUDGETVOTESYNC;
+extern const char* DSEEP;
+extern const char* DSEG;
+extern const char* DSTX;
+extern const char* FINALBUDGET;
+extern const char* FINALBUDGETVOTE;
+extern const char* GETMNWINNERS;
+extern const char* GETSPORKS;
+extern const char* MNBROADCAST;
+extern const char* MNBROADCAST2;
+extern const char* MNPING;
+extern const char* MNPING2;
+extern const char* MNSYNCSTATUS;
+extern const char* MNWINNER;
+extern const char* SPORK;
+extern const char* BLOCKPROOF;
 }; // namespace NetMsgType
 
 /* Get a vector of all valid message types (see above) */
@@ -412,10 +440,25 @@ enum GetDataMsg : uint32_t {
     UNDEFINED = 0,
     MSG_TX = 1,
     MSG_BLOCK = 2,
-    MSG_WTX = 5,                                      //!< Defined in BIP 339
     // The following can only occur in getdata. Invs always use TX/WTX or BLOCK.
     MSG_FILTERED_BLOCK = 3,                           //!< Defined in BIP37
-    MSG_CMPCT_BLOCK = 4,                              //!< Defined in BIP152
+
+    // Crown messages
+    MSG_SPORK = 6,
+    MSG_MASTERNODE_WINNER = 7,
+    MSG_MASTERNODE_SCANNING_ERROR = 8,
+//    MSG_BUDGET_VOTE = 9,
+//    MSG_BUDGET_PROPOSAL = 10,
+//    MSG_BUDGET_FINALIZED = 11,
+//    MSG_BUDGET_FINALIZED_VOTE = 12,
+    MSG_MASTERNODE_QUORUM = 13,
+    MSG_MASTERNODE_ANNOUNCE = 14,
+    MSG_MASTERNODE_PING = 15,
+
+    MSG_DSTX = 19,
+    MSG_CMPCT_BLOCK = 20, //!< Defined in BIP152 (moved from 4)
+    MSG_WTX = 21,         //!< Defined in BIP339 (moved from 5)
+
     MSG_WITNESS_BLOCK = MSG_BLOCK | MSG_WITNESS_FLAG, //!< Defined in BIP144
     MSG_WITNESS_TX = MSG_TX | MSG_WITNESS_FLAG,       //!< Defined in BIP144
     // MSG_FILTERED_WITNESS_BLOCK is defined in BIP144 as reserved for future
@@ -453,6 +496,10 @@ public:
     bool IsGenBlkMsg() const
     {
         return type == MSG_BLOCK || type == MSG_FILTERED_BLOCK || type == MSG_CMPCT_BLOCK || type == MSG_WITNESS_BLOCK;
+    }
+    bool IsMnMsg() const
+    {
+        return !IsGenTxMsg() && !IsGenBlkMsg();
     }
 
     uint32_t type;

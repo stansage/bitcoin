@@ -186,6 +186,14 @@ public:
         }
         return Params().GenesisBlock().GetBlockTime(); // Genesis block's time of current network
     }
+    std::string getLastBlockHash() override
+    {
+        LOCK(::cs_main);
+        if (::ChainActive().Tip()) {
+            return ::ChainActive().Tip()->GetBlockHash().ToString();
+        }
+        return Params().GenesisBlock().GetHash().ToString(); // Genesis block's hash of current network
+    }
     double getVerificationProgress() override
     {
         const CBlockIndex* tip;
@@ -310,6 +318,10 @@ public:
                 fn(sync_state, BlockTip{block->nHeight, block->GetBlockTime(), block->GetBlockHash()},
                     /* verification progress is unused when a header was received */ 0);
             }));
+    }
+    std::unique_ptr<Handler> handleNotifyAdditionalDataSyncProgressChanged(NotifyAdditionalDataSyncProgressChangedFn fn) override
+    {
+        return MakeHandler(::uiInterface.NotifyAdditionalDataSyncProgressChanged_connect(fn));
     }
     NodeContext* context() override { return m_context; }
     void setContext(NodeContext* context) override

@@ -13,6 +13,8 @@
 #include <amount.h>
 #include <banman.h>
 #include <blockfilter.h>
+#include <crown/cache.h>
+#include <crown/nodewallet.h>
 #include <chain.h>
 #include <chainparams.h>
 #include <compat/sanity.h>
@@ -70,6 +72,10 @@
 #include <set>
 #include <stdint.h>
 #include <stdio.h>
+
+#include <crown/init.h>
+#include <crown/nodesync.h>
+#include <masternode/masternode-sync.h>
 
 #ifndef WIN32
 #include <attributes.h>
@@ -589,6 +595,10 @@ void SetupServerArgs(NodeContext& node)
     argsman.AddArg("-headerspamfilterignoreport=<n>", strprintf("Ignore the port in the ip address when looking for header spam, determine whether or not multiple nodes can be on the same IP (default: %u)", DEFAULT_HEADER_SPAM_FILTER_IGNORE_PORT), ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     argsman.AddArg("-cleanblockindex=<n>", "Clean block index. 0 = disabled, 1 = enabled (default: enabled)", ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     argsman.AddArg("-cleanblockindextimeout=<n>", "Clean block index periodically after some time (default 600 seconds)", ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
+    argsman.AddArg("-masternode", "Run as masternode", false, OptionsCategory::RPC);
+    argsman.AddArg("-masternodeprivkey", "Masternode private key", false, OptionsCategory::RPC);
+    argsman.AddArg("-masternodeaddr", strprintf(_("Set external address:port to get to this masternode (example: %s)").translated, "1.2.3.4:12345"), false, OptionsCategory::RPC);
+    argsman.AddArg("-diagnode", "Enable full masternode diagnostic messaging.", ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
 
 #if HAVE_DECL_DAEMON
     argsman.AddArg("-daemon", "Run in the background as a daemon and accept commands", ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
@@ -1369,6 +1379,7 @@ bool AppInitMain(const util::Ref& context, NodeContext& node, interfaces::BlockA
     for (const auto& client : node.chain_clients) {
         client->registerRpcs();
     }
+    g_rpc_node = &node;
 #if ENABLE_ZMQ
     RegisterZMQRPCCommands(tableRPC);
 #endif
@@ -1923,6 +1934,11 @@ bool AppInitMain(const util::Ref& context, NodeContext& node, interfaces::BlockA
 
     int chain_active_height;
 
+    // Attempt to setup master config
+    if (!setupNodeConfiguration()) {
+        return false;
+    }
+
     //// debug print
     {
         LOCK(cs_main);
@@ -2040,6 +2056,9 @@ bool AppInitMain(const util::Ref& context, NodeContext& node, interfaces::BlockA
     node.scheduler->scheduleEvery([banman]{
         banman->DumpBanlist();
     }, DUMP_BANS_INTERVAL);
+
+    node.scheduler->scheduleEvery(std::bind(&ThreadMasternodeSync, std::ref(*node.connman)), std::chrono::milliseconds{1000});
+    node.scheduler->scheduleEvery(std::bind(&NodeMinter, std::ref(Params()), std::ref(*node.connman)), std::chrono::milliseconds{5000});
 
 #if HAVE_SYSTEM
     StartupNotify(args);

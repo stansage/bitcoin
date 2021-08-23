@@ -139,6 +139,7 @@ class CNetAddr
     public:
         CNetAddr();
         explicit CNetAddr(const struct in_addr& ipv4Addr);
+        explicit CNetAddr(const std::string &strIp, bool fAllowLookup = false);   // legacy
         void SetIP(const CNetAddr& ip);
 
         /**
@@ -185,7 +186,7 @@ class CNetAddr
 
         enum Network GetNetwork() const;
         std::string ToString() const;
-        std::string ToStringIP() const;
+        std::string ToStringIP(bool fUseGetnameinfo = true) const;
         uint64_t GetHash() const;
         bool GetInAddr(struct in_addr* pipv4Addr) const;
         Network GetNetClass() const;
@@ -508,6 +509,7 @@ class CService : public CNetAddr
         CService(const CNetAddr& ip, uint16_t port);
         CService(const struct in_addr& ipv4Addr, uint16_t port);
         explicit CService(const struct sockaddr_in& addr);
+        explicit CService(const std::string& strIpPort, bool fAllowLookup = false);
         uint16_t GetPort() const;
         bool GetSockAddr(struct sockaddr* paddr, socklen_t *addrlen) const;
         bool SetSockAddr(const struct sockaddr* paddr);
@@ -515,9 +517,9 @@ class CService : public CNetAddr
         friend bool operator!=(const CService& a, const CService& b) { return !(a == b); }
         friend bool operator<(const CService& a, const CService& b);
         std::vector<unsigned char> GetKey() const;
-        std::string ToString() const;
+        std::string ToString(bool fUseGetnameinfo = true) const;
         std::string ToStringPort() const;
-        std::string ToStringIPPort() const;
+        std::string ToStringIPPort(bool fUseGetnameinfo = true) const;
 
         CService(const struct in6_addr& ipv6Addr, uint16_t port);
         explicit CService(const struct sockaddr_in6& addr);

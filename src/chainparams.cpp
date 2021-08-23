@@ -107,6 +107,11 @@ public:
         consensus.nMinimumChainWork = uint256S("0x0000000000000000000000000000000000000000000000000000000000200020"); //block 1
         consensus.defaultAssumeValid = uint256S("0x000005cb88ef73f2fa282ee15f84be411bdeb379a0ea6df32a4679941da466aa"); //block 1
 
+        //! Misc/masternode parameters
+        consensus.strSporkKey = "0440409BDACDCE03BFB6D5F16E2D414953038996B49BEE6697CFA400A0001D0837C885C5B57DAD10E5CAAAE36EE975005CC6CBD7001A2A8DE76FF12185904A9BB1";
+        consensus.nMasternodeCollateral = 10000 * COIN;
+        consensus.strLegacySignerDummyAddress = "18WTcWvwrNnfqeQAn6th9QQ2EpnXMq5Th8";
+
         /**
          * The message start string is designed to be unlikely to occur in normal data.
          * The characters are rarely used upper ASCII, not valid as UTF-8, and produce
@@ -140,6 +145,8 @@ public:
         base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x88, 0xAD, 0xE4};
 
         bech32_hrp = "bc";
+
+        nFulfilledRequestExpireTime = 60*60;
 
         vFixedSeeds = std::vector<SeedSpec6>(pnSeed6_main, pnSeed6_main + ARRAYLEN(pnSeed6_main));
 
@@ -212,6 +219,16 @@ public:
         consensus.nMinimumChainWork = uint256S("0x0000000000000000000000000000000000000000000000000000000000000000"); // 0
         consensus.defaultAssumeValid = uint256S("0x00000fe2acf48e35c5b594d9ff7db2a7bbafa1b73205b2789a6833be70595818"); // 0
 
+        //! Misc/masternode parameters
+        consensus.strSporkKey = "0440409BDACDCE03BFB6D5F16E2D414953038996B49BEE6697CFA400A0001D0837C885C5B57DAD10E5CAAAE36EE975005CC6CBD7001A2A8DE76FF12185904A9BB1";
+        consensus.nMasternodeCollateral = 10000 * COIN;
+        consensus.strLegacySignerDummyAddress = "18WTcWvwrNnfqeQAn6th9QQ2EpnXMq5Th8";
+
+        /**
+         * The message start string is designed to be unlikely to occur in normal data.
+         * The characters are rarely used upper ASCII, not valid as UTF-8, and produce
+         * a large 32-bit integer with any alignment.
+         */
         pchMessageStart[0] = 0xd5;
         pchMessageStart[1] = 0x1f;
         pchMessageStart[2] = 0x35;
@@ -239,6 +256,8 @@ public:
         base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x35, 0x83, 0x94};
 
         bech32_hrp = "bt";
+
+        nFulfilledRequestExpireTime = 60*60;
 
         vFixedSeeds = std::vector<SeedSpec6>(pnSeed6_test, pnSeed6_test + ARRAYLEN(pnSeed6_test));
 

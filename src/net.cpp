@@ -28,6 +28,10 @@
 #include <fcntl.h>
 #endif
 
+#if HAVE_DECL_GETIFADDRS && HAVE_DECL_FREEIFADDRS
+#include <ifaddrs.h>
+#endif
+
 #ifdef USE_POLL
 #include <poll.h>
 #endif
@@ -1182,6 +1186,7 @@ void CConnman::DisconnectNodes()
 
                 // release outbound grant (if any)
                 pnode->grantOutbound.Release();
+                pnode->grantMasternodeOutbound.Release();
 
                 // close socket and cleanup
                 pnode->CloseSocketDisconnect();
@@ -2090,6 +2095,48 @@ std::vector<CAddress> CConnman::GetCurrentBlockRelayOnlyConns() const
     return ret;
 }
 
+void CConnman::ThreadOpenMasternodeConnections()
+{
+    // Connecting to specific addresses, no masternode connections available
+    if (gArgs.IsArgSet("-connect") && gArgs.GetArgs("-connect").size() > 0)
+        return;
+
+    while (!interruptNet)
+    {
+        if (!interruptNet.sleep_for(std::chrono::milliseconds(1000)))
+            return;
+
+        CSemaphoreGrant grant(*semMasternodeOutbound);
+        if (interruptNet)
+            return;
+
+        // NOTE: Process only one pending masternode at a time
+
+        LOCK(cs_vPendingMasternodes);
+        if (vPendingMasternodes.empty()) {
+            // nothing to do, keep waiting
+            continue;
+        }
+
+        const CService addr = vPendingMasternodes.front();
+        vPendingMasternodes.erase(vPendingMasternodes.begin());
+        if (IsMasternodeOrDisconnectRequested(addr)) {
+            // nothing to do, try the next one
+            continue;
+        }
+
+        OpenMasternodeConnection(CAddress(addr, NODE_NETWORK));
+        // should be in the list now if connection was opened
+        ForNode(addr, AllNodes, [&](CNode* pnode) {
+            if (pnode->fDisconnect) {
+                return false;
+            }
+            grant.MoveTo(pnode->grantMasternodeOutbound);
+            return true;
+        });
+    }
+}
+
 std::vector<AddedNodeInfo> CConnman::GetAddedNodeInfo()
 {
     std::vector<AddedNodeInfo> ret;
@@ -2205,6 +2252,10 @@ void CConnman::OpenNetworkConnection(const CAddress& addrConnect, bool fCountFai
         LOCK(cs_vNodes);
         vNodes.push_back(pnode);
     }
+}
+
+void CConnman::OpenMasternodeConnection(const CAddress &addrConnect) {
+    OpenNetworkConnection(addrConnect, false, nullptr, nullptr, ConnectionType::OUTBOUND_FULL_RELAY);
 }
 
 void CConnman::ThreadMessageHandler()
@@ -2510,6 +2561,10 @@ bool CConnman::Start(CScheduler& scheduler, const Options& connOptions)
         // initialize semaphore
         semAddnode = MakeUnique<CSemaphore>(nMaxAddnode);
     }
+    if (semMasternodeOutbound == nullptr) {
+        // initialize semaphore
+        semMasternodeOutbound = MakeUnique<CSemaphore>(MAX_OUTBOUND_MASTERNODE_CONNECTIONS);
+    }
 
     //
     // Start threads
@@ -2534,6 +2589,9 @@ bool CConnman::Start(CScheduler& scheduler, const Options& connOptions)
 
     // Initiate manual connections
     threadOpenAddedConnections = std::thread(&TraceThread<std::function<void()> >, "addcon", std::function<void()>(std::bind(&CConnman::ThreadOpenAddedConnections, this)));
+
+    // Start the masternode thread
+    threadOpenMasternodeConnections = std::thread(&TraceThread<std::function<void()> >, "mncon", std::function<void()>(std::bind(&CConnman::ThreadOpenMasternodeConnections, this)));
 
     if (connOptions.m_use_addrman_outgoing && !connOptions.m_specified_outgoing.empty()) {
         if (clientInterface) {
@@ -2592,12 +2650,20 @@ void CConnman::Interrupt()
             semAddnode->post();
         }
     }
+
+    if (semMasternodeOutbound) {
+        for (int i=0; i<MAX_OUTBOUND_MASTERNODE_CONNECTIONS; i++) {
+            semMasternodeOutbound->post();
+        }
+    }
 }
 
 void CConnman::StopThreads()
 {
     if (threadMessageHandler.joinable())
         threadMessageHandler.join();
+    if (threadOpenMasternodeConnections.joinable())
+        threadOpenMasternodeConnections.join();
     if (threadOpenConnections.joinable())
         threadOpenConnections.join();
     if (threadOpenAddedConnections.joinable())
@@ -2644,6 +2710,7 @@ void CConnman::StopNodes()
     vNodesDisconnected.clear();
     vhListenSocket.clear();
     semOutbound.reset();
+    semMasternodeOutbound.reset();
     semAddnode.reset();
 }
 
@@ -2677,6 +2744,11 @@ void CConnman::MarkAddressGood(const CAddress& addr)
 bool CConnman::AddNewAddresses(const std::vector<CAddress>& vAddr, const CAddress& addrFrom, int64_t nTimePenalty)
 {
     return addrman.Add(vAddr, addrFrom, nTimePenalty);
+}
+
+bool CConnman::AddNewAddresses(const CAddress& addr, const CAddress& addrFrom, int64_t nTimePenalty)
+{
+    return addrman.Add(addr, addrFrom, nTimePenalty);
 }
 
 std::vector<CAddress> CConnman::GetAddresses(size_t max_addresses, size_t max_pct)
@@ -2821,6 +2893,15 @@ bool CConnman::DisconnectNode(NodeId id)
         }
     }
     return false;
+}
+
+void CConnman::RelayInv(CInv& inv)
+{
+    LOCK(cs_vNodes);
+    for (CNode* pnode : vNodes){
+        if (pnode->nVersion >= PROTOCOL_VERSION)
+            pnode->PushInventory(inv);
+    }
 }
 
 void CConnman::RecordBytesRecv(uint64_t bytes)
@@ -2993,6 +3074,13 @@ CNode::~CNode()
     CloseSocket(hSocket);
 }
 
+void CNode::AskForBlock(const CInv& inv)
+{
+    if (deqAskForBlocks.size() > DEQASKFOR_MAX)
+        return;
+    deqAskForBlocks.emplace_back(inv);
+}
+
 bool CConnman::NodeFullyConnected(const CNode* pnode)
 {
     return pnode && pnode->fSuccessfullyConnected && !pnode->fDisconnect;
@@ -3031,6 +3119,19 @@ void CConnman::PushMessage(CNode* pnode, CSerializedNetMsg&& msg)
         RecordBytesSent(nBytesSent);
 }
 
+bool CConnman::ForNode(const CService& addr, std::function<bool(const CNode* pnode)> cond, std::function<bool(CNode* pnode)> func)
+{
+    CNode* found = nullptr;
+    LOCK(cs_vNodes);
+    for (auto&& pnode : vNodes) {
+        if((CService)pnode->addr == addr) {
+            found = pnode;
+            break;
+        }
+    }
+    return found != nullptr && cond(found) && func(found);
+}
+
 bool CConnman::ForNode(NodeId id, std::function<bool(CNode* pnode)> func)
 {
     CNode* found = nullptr;
@@ -3042,6 +3143,12 @@ bool CConnman::ForNode(NodeId id, std::function<bool(CNode* pnode)> func)
         }
     }
     return found != nullptr && NodeFullyConnected(found) && func(found);
+}
+
+bool CConnman::IsMasternodeOrDisconnectRequested(const CService& addr) {
+    return ForNode(addr, AllNodes, [](CNode* pnode){
+        return pnode->fMasternode || pnode->fDisconnect;
+    });
 }
 
 int64_t CConnman::PoissonNextSendInbound(int64_t now, int average_interval_seconds)
@@ -3070,4 +3177,36 @@ uint64_t CConnman::CalculateKeyedNetGroup(const CAddress& ad) const
     std::vector<unsigned char> vchNetGroup(ad.GetGroup(addrman.m_asmap));
 
     return GetDeterministicRandomizer(RANDOMIZER_ID_NETGROUP).Write(vchNetGroup.data(), vchNetGroup.size()).Finalize();
+}
+
+std::vector<CNode*> CConnman::CopyNodeVector()
+{
+    LOCK(cs_vNodes);
+    std::vector<CNode*> vecNodesCopy;
+    for (auto&& pnode : vNodes) {
+        LogPrint(BCLog::NET, "CConnman::CopyNodeVector -- adding node: peer=%d addr=%s nRefCount=%d fNetworkNode=%d fInbound=%d fMasternode=%d\n",
+                  pnode->id, pnode->addr.ToString(), pnode->GetRefCount(), pnode->fNetworkNode, pnode->fInbound, pnode->fMasternode);
+        pnode->AddRef();
+        vecNodesCopy.push_back(pnode);
+    }
+    return vecNodesCopy;
+}
+
+void CConnman::ReleaseNodeVector(const std::vector<CNode*>& vecNodes)
+{
+    LOCK(cs_vNodes);
+    for (auto&& pnode : vNodes) {
+        LogPrint(BCLog::NET, "CConnman::ReleaseNodeVector -- releasing node: peer=%d addr=%s nRefCount=%d fNetworkNode=%d fInbound=%d fMasternode=%d\n",
+                  pnode->id, pnode->addr.ToString(), pnode->GetRefCount(), pnode->fNetworkNode, pnode->fInbound, pnode->fMasternode);
+        pnode->Release();
+    }
+}
+
+void CConnman::RelayTransaction(const CTransaction& tx)
+{
+    CInv inv(MSG_TX, tx.GetHash());
+    ForEachNode([&inv](CNode* pnode)
+    {
+        pnode->PushInventory(inv);
+    });
 }

@@ -97,6 +97,14 @@ struct Params {
     /** Block sync-checkpoint span*/
     int nCheckpointSpan;
 
+    /** Misc/masternode parameters */
+    std::string strSporkKey;
+    std::string strLegacySignerDummyAddress;
+    std::uint64_t nMasternodeCollateral;
+    std::string SporkKey() const { return strSporkKey; }
+    std::string LegacySignerDummyAddress() const { return strLegacySignerDummyAddress; }
+    std::uint64_t MasternodeCollateral() const { return nMasternodeCollateral; }
+
     /**
      * If true, witness commitments contain a payload equal to a Bitcoin Script solution
      * to the signet challenge. See BIP325.

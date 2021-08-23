@@ -156,6 +156,7 @@ const CLogCategoryDesc LogCategories[] =
     {BCLog::LEVELDB, "leveldb"},
     {BCLog::VALIDATION, "validation"},
     {BCLog::COINSTAKE, "coinstake"},
+    {BCLog::MASTERNODE, "masternode"},
     {BCLog::ALL, "1"},
     {BCLog::ALL, "all"},
 };

@@ -8,6 +8,7 @@
 #include <crypto/common.h>
 #include <crypto/sha3.h>
 #include <hash.h>
+#include <netbase.h>
 #include <prevector.h>
 #include <tinyformat.h>
 #include <util/asmap.h>
@@ -525,11 +526,12 @@ static std::string IPv6ToString(Span<const uint8_t> a)
     // clang-format on
 }
 
-std::string CNetAddr::ToStringIP() const
+std::string CNetAddr::ToStringIP(bool fUseGetnameinfo) const
 {
     switch (m_net) {
     case NET_IPV4:
     case NET_IPV6: {
+        if (fUseGetnameinfo) {
         CService serv(*this, 0);
         struct sockaddr_storage sockaddr;
         socklen_t socklen = sizeof(sockaddr);
@@ -538,7 +540,7 @@ std::string CNetAddr::ToStringIP() const
             if (!getnameinfo((const struct sockaddr*)&sockaddr, socklen, name,
                              sizeof(name), nullptr, 0, NI_NUMERICHOST))
                 return std::string(name);
-        }
+        }}
         if (m_net == NET_IPV4) {
             return strprintf("%u.%u.%u.%u", m_addr[0], m_addr[1], m_addr[2], m_addr[3]);
         }
@@ -969,24 +971,31 @@ std::string CService::ToStringPort() const
     return strprintf("%u", port);
 }
 
-std::string CService::ToStringIPPort() const
+std::string CService::ToStringIPPort(bool fUseGetnameinfo) const
 {
     if (IsIPv4() || IsTor() || IsI2P() || IsInternal()) {
-        return ToStringIP() + ":" + ToStringPort();
+        return ToStringIP(fUseGetnameinfo) + ":" + ToStringPort();
     } else {
-        return "[" + ToStringIP() + "]:" + ToStringPort();
+         return "[" + ToStringIP(fUseGetnameinfo) + "]:" + ToStringPort();
     }
 }
 
-std::string CService::ToString() const
+std::string CService::ToString(bool fUseGetnameinfo) const
 {
-    return ToStringIPPort();
+    return ToStringIPPort(fUseGetnameinfo);
 }
 
 CSubNet::CSubNet():
     valid(false)
 {
     memset(netmask, 0, sizeof(netmask));
+}
+
+CService::CService(const std::string& strIpPort, bool fAllowLookup)
+{
+    CService ip;
+    if (Lookup(strIpPort.c_str(), ip, 0, fAllowLookup))
+        *this = ip;
 }
 
 CSubNet::CSubNet(const CNetAddr& addr, uint8_t mask) : CSubNet()

@@ -14,6 +14,7 @@
 #include <hash.h>
 #include <index/blockfilterindex.h>
 #include <merkleblock.h>
+#include <mn_processing.h>
 #include <netbase.h>
 #include <netmessagemaker.h>
 #include <policy/fees.h>
@@ -33,6 +34,9 @@
 #include <consensus/merkle.h>
 #include <shutdown.h>
 #include <checkpoints.h>
+
+#include <masternode/masternode.h>    //! for CMasternodePing class
+#include <masternode/masternodeman.h> //! for mnodeman
 
 #include <memory>
 #include <typeinfo>
@@ -87,10 +91,11 @@ static constexpr int32_t MAX_PEER_TX_ANNOUNCEMENTS = 5000;
 static constexpr auto TXID_RELAY_DELAY = std::chrono::seconds{2};
 /** How long to delay requesting transactions from non-preferred peers */
 static constexpr auto NONPREF_PEER_TX_DELAY = std::chrono::seconds{2};
-/** How long to delay requesting transactions from overloaded peers (see MAX_PEER_TX_REQUEST_IN_FLIGHT). */
-static constexpr auto OVERLOADED_PEER_TX_DELAY = std::chrono::seconds{2};
+static constexpr std::chrono::microseconds MAX_GETDATA_RANDOM_DELAY{std::chrono::seconds{2}};
 /** How long to wait (in microseconds) before downloading a transaction from an additional peer */
 static constexpr std::chrono::microseconds GETDATA_TX_INTERVAL{std::chrono::seconds{60}};
+/** How long to delay requesting transactions from overloaded peers (see MAX_PEER_TX_REQUEST_IN_FLIGHT). */
+static constexpr auto OVERLOADED_PEER_TX_DELAY = std::chrono::seconds{2};
 /** Limit to avoid sending big packets. Not used in processing incoming GETDATA for compatibility */
 static const unsigned int MAX_GETDATA_SZ = 1000;
 /** Number of blocks that can be requested at any given time from a single peer. */
@@ -100,6 +105,8 @@ static const unsigned int BLOCK_STALLING_TIMEOUT = 2;
 /** Number of headers sent in one getheaders result. We rely on the assumption that if a peer sends
  *  less than this number, we reached its tip. Changing this value is a protocol upgrade. */
 static const unsigned int MAX_HEADERS_RESULTS = 2000;
+/** Maximum length of reject messages. */
+static const unsigned int MAX_REJECT_MESSAGE_LENGTH = 111;
 /** Maximum depth of blocks we're willing to serve as compact blocks to peers
  *  when requested. For older blocks, a regular BLOCK response will be sent. */
 static const int MAX_CMPCTBLOCK_DEPTH = 5;
@@ -179,9 +186,6 @@ std::map<uint256, COrphanBlock*> mapOrphanBlocks GUARDED_BY(cs_main);
 std::multimap<uint256, COrphanBlock*> mapOrphanBlocksByPrev GUARDED_BY(cs_main);
 std::set<std::pair<COutPoint, unsigned int>> setStakeSeenOrphan GUARDED_BY(cs_main);
 size_t nOrphanBlocksSize = 0;
-
-/** Increase a node's misbehavior score. */
-void Misbehaving(const NodeId nodeid, const int howmuch, const std::string& message="") EXCLUSIVE_LOCKS_REQUIRED(cs_main);
 
 // Internal stuff
 namespace {
@@ -518,6 +522,9 @@ struct CNodeState {
         m_recently_announced_invs.reset();
     }
 };
+
+// Keeps track of the time (in microseconds) when transactions were requested last time
+limitedmap<uint256, std::chrono::microseconds> g_already_asked_for GUARDED_BY(cs_main)(MAX_INV_SZ);
 
 /** Map maintaining per-node state. */
 static std::map<NodeId, CNodeState> mapNodeState GUARDED_BY(cs_main);
@@ -5074,6 +5081,24 @@ void CleanBlockIndex()
         }
 
         InterruptibleSleep(std::chrono::milliseconds{cleanTimeout});
+    }
+}
+
+void Misbehaving(const NodeId pnode, const int howmuch, const std::string& message)
+{
+    assert(howmuch > 0);
+
+    PeerRef peer = GetPeerRef(pnode);
+    if (peer == nullptr) return;
+
+    LOCK(peer->m_misbehavior_mutex);
+    peer->m_misbehavior_score += howmuch;
+    const std::string message_prefixed = message.empty() ? "" : (": " + message);
+    if (peer->m_misbehavior_score >= DISCOURAGEMENT_THRESHOLD && peer->m_misbehavior_score - howmuch < DISCOURAGEMENT_THRESHOLD) {
+        LogPrint(BCLog::NET, "Misbehaving: peer=%d (%d -> %d) DISCOURAGE THRESHOLD EXCEEDED%s\n", pnode, peer->m_misbehavior_score - howmuch, peer->m_misbehavior_score, message_prefixed);
+        peer->m_should_discourage = true;
+    } else {
+        LogPrint(BCLog::NET, "Misbehaving: peer=%d (%d -> %d)%s\n", pnode, peer->m_misbehavior_score - howmuch, peer->m_misbehavior_score, message_prefixed);
     }
 }
 

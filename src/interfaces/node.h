@@ -133,6 +133,9 @@ public:
     //! Get last block time.
     virtual int64_t getLastBlockTime() = 0;
 
+    //! Get last block hash.
+    virtual std::string getLastBlockHash() = 0;
+
     //! Get verification progress.
     virtual double getVerificationProgress() = 0;
 
@@ -235,6 +238,10 @@ public:
     using NotifyHeaderTipFn =
         std::function<void(SynchronizationState, interfaces::BlockTip tip, double verification_progress)>;
     virtual std::unique_ptr<Handler> handleNotifyHeaderTip(NotifyHeaderTipFn fn) = 0;
+
+    //! Register handler for additional sync messages.
+    using NotifyAdditionalDataSyncProgressChangedFn = std::function<void(double nSyncProgress)>;
+    virtual std::unique_ptr<Handler> handleNotifyAdditionalDataSyncProgressChanged(NotifyAdditionalDataSyncProgressChangedFn fn) = 0;  
 
     //! Get and set internal node context. Useful for testing, but not
     //! accessible across processes.

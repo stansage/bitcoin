@@ -63,6 +63,14 @@ CConnman* CWallet::defaultConnman = 0;
 ChainstateManager* CWallet::defaultChainman = 0;
 CTxMemPool* CWallet::defaultMempool = 0;
 
+std::shared_ptr<CWallet> GetMainWallet()
+{
+    LOCK(cs_wallets);
+    for (const auto& wallet : vpwallets)
+        return wallet;
+    return nullptr;
+}
+
 bool AddWalletSetting(interfaces::Chain& chain, const std::string& wallet_name)
 {
     util::SettingsValue setting_value = chain.getRwSetting("wallet");
@@ -1967,6 +1975,7 @@ bool CWalletTx::SubmitMemoryPoolAndRelay(std::string& err_string, bool relay)
 
     // Submit transaction to mempool for relay
     pwallet->WalletLogPrintf("Submitting wtx %s to mempool for relay\n", GetHash().ToString());
+
     // We must set fInMempool here - while it will be re-set to true by the
     // entered-mempool callback, if we did not there would be a race where a
     // user could call sendmoney in a loop and hit spurious out of funds errors
@@ -3063,6 +3072,7 @@ bool CWallet::CreateTransactionInternal(
         if (recipient.fSubtractFeeFromAmount)
             nSubtractFeeFromAmount++;
     }
+
     if (vecSend.empty())
     {
         error = _("Transaction must have at least one recipient");
@@ -3747,7 +3757,7 @@ void CWallet::CommitTransaction(CTransactionRef tx, mapValue_t mapValue, std::ve
     }
 
     std::string err_string;
-    if (!wtx.SubmitMemoryPoolAndRelay(err_string, true)) {
+    if (!wtx.SubmitMemoryPoolAndRelay(err_string, true/*, fUseInstantX*/)) {
         WalletLogPrintf("CommitTransaction(): Transaction cannot be broadcast immediately, %s\n", err_string);
         // TODO: if we expect the failure to be long term or permanent, instead delete wtx from the wallet and return failure.
     }

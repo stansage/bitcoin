@@ -80,6 +80,8 @@ static const char* const DEFAULT_BLOCKFILTERINDEX = "0";
 static const bool DEFAULT_PERSIST_MEMPOOL = true;
 /** Default for using fee filter */
 static const bool DEFAULT_FEEFILTER = true;
+/** Default for node diag logging */
+static const bool DEFAULT_NODEDIAG = false;
 /** Default for -stopatheight */
 static const int DEFAULT_STOPATHEIGHT = 0;
 /** Block files containing a block-height within MIN_BLOCKS_TO_KEEP of ::ChainActive().Tip() will not be pruned. */
@@ -113,6 +115,7 @@ enum class SynchronizationState {
 
 extern RecursiveMutex cs_main;
 extern CBlockPolicyEstimator feeEstimator;
+extern std::map<uint256, int64_t> mapRejectedBlocks;
 typedef std::unordered_map<uint256, CBlockIndex*, BlockHasher> BlockMap;
 typedef std::set<std::pair<COutPoint, unsigned int>> StakeSeenSet;
 extern Mutex g_best_block_mutex;
@@ -1019,6 +1022,12 @@ inline bool IsBlockPruned(const CBlockIndex* pblockindex)
 {
     return (fHavePruned && !(pblockindex->nStatus & BLOCK_HAVE_DATA) && pblockindex->nTx > 0);
 }
+
+bool GetUTXOCoin(const COutPoint& outpoint, Coin& coin);
+int GetUTXOHeight(const COutPoint& outpoint);
+int GetUTXOConfirmations(const COutPoint& outpoint);
+
+void UpdateMempoolForReorg(CTxMemPool& mempool, DisconnectedBlockTransactions& disconnectpool, bool fAddToMempool) EXCLUSIVE_LOCKS_REQUIRED(cs_main, mempool.cs);
 
 struct CHeightTxIndexKey {
     unsigned int height;

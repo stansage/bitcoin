@@ -45,6 +45,14 @@
 
 class UniValue;
 
+//Crown only features
+extern bool fMasterNode;
+extern bool fLiteMode;
+extern std::string strMasterNodeAddr;
+extern int64_t enforceMasternodePaymentsTime;
+extern std::string strMasterNodePrivKey;
+//extern std::string strBudgetMode;
+
 // Application startup time (used for uptime calculation)
 int64_t GetStartupTime();
 
@@ -486,6 +494,7 @@ template <typename Callable> void TraceThread(const char* name,  Callable func)
 }
 
 std::string CopyrightHolders(const std::string& strPrefix);
+fs::path GetMasternodeConfigFile();
 
 /**
  * On platforms that support it, tell the kernel the calling thread is

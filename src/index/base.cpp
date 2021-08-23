@@ -51,6 +51,11 @@ BaseIndex::~BaseIndex()
     Stop();
 }
 
+bool BaseIndex::IsTxIndexSynced() const
+{
+    return m_synced;
+}
+
 bool BaseIndex::Init()
 {
     CBlockLocator locator;

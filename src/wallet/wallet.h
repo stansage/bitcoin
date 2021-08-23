@@ -44,6 +44,7 @@ using LoadWalletFn = std::function<void(std::unique_ptr<interfaces::Wallet> wall
 
 struct bilingual_str;
 
+
 //! Explicitly unload and delete the wallet.
 //! Blocks the current thread after signaling the unload intent so that all
 //! wallet clients release the wallet.
@@ -101,6 +102,7 @@ constexpr CAmount HIGH_MAX_TX_FEE{100 * HIGH_TX_FEE_PER_KB};
 //! Pre-calculated constants for input size estimation in *virtual size*
 static constexpr size_t DUMMY_NESTED_P2WPKH_INPUT_SIZE = 91;
 
+class CMasternode;
 class CCoinControl;
 class COutput;
 class CScript;
@@ -195,6 +197,7 @@ struct CRecipient
 
 typedef std::map<std::string, std::string> mapValue_t;
 
+std::shared_ptr<CWallet> GetMainWallet();
 
 static inline void ReadOrderPos(int64_t& nOrderPos, mapValue_t& mapValue)
 {
@@ -490,7 +493,7 @@ public:
     int64_t GetTxTime() const;
 
     // Pass this transaction to node for mempool insertion and relay to peers if flag set to true
-    bool SubmitMemoryPoolAndRelay(std::string& err_string, bool relay);
+    bool SubmitMemoryPoolAndRelay(std::string& err_string, bool relay/*, bool isIX = false*/);
 
     // TODO: Remove "NO_THREAD_SAFETY_ANALYSIS" and replace it with the correct
     // annotation "EXCLUSIVE_LOCKS_REQUIRED(pwallet->cs_wallet)". The annotation
@@ -1322,6 +1325,12 @@ public:
     static ChainstateManager* defaultChainman;
 
     static CTxMemPool* defaultMempool;
+
+    //! Master/Systemnode related functions
+    bool GetBudgetSystemCollateralTX(CTransactionRef& tx, uint256 hash);
+    bool GetVinAndKeysFromOutput(COutput out, CTxIn& txinRet, CPubKey& pubkeyRet, CKey& keyRet);
+    bool GetMasternodeVinAndKeys(CTxIn& txinRet, CPubKey& pubKeyRet, CKey& keyRet, std::string strTxHash = "", std::string strOutputIndex = "");
+    bool GetActiveMasternode(CMasternode*& activeStakingNode);
 };
 
 /**

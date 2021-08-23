@@ -134,8 +134,16 @@ BITCOIN_CORE_H = \
   consensus/tx_verify.h \
   core_io.h \
   core_memusage.h \
+  crown/cache.h \
+  crown/init.h \
+  crown/legacycalls.h \
+  crown/legacysigner.h \
+  crown/nodesync.h \
+  crown/nodewallet.h \
+  crown/spork.h \
   cuckoocache.h \
   dbwrapper.h \
+  flat-database.h \
   flatfile.h \
   fs.h \
   httprpc.h \
@@ -152,18 +160,23 @@ BITCOIN_CORE_H = \
   interfaces/wallet.h \
   key.h \
   key_io.h \
+  limitedmap.h \
   logging.h \
   logging/timer.h \
   memusage.h \
   merkleblock.h \
   miner.h \
+  mn_processing.h \
   net.h \
+  netfulfilledman.h \
   net_permissions.h \
   net_processing.h \
   net_types.h \
   netaddress.h \
   netbase.h \
   netmessagemaker.h \
+  nodeconfig.h \
+  nodediag.h \
   node/coin.h \
   node/coinstats.h \
   node/context.h \
@@ -294,6 +307,13 @@ libbitcoin_server_a_SOURCES = \
   chain.cpp \
   checkpoints.cpp \
   consensus/tx_verify.cpp \
+  crown/cache.cpp \
+  crown/init.cpp \
+  crown/legacycalls.cpp \
+  crown/legacysigner.cpp \
+  crown/nodesync.cpp \
+  crown/nodewallet.cpp \
+  crown/spork.cpp \
   dbwrapper.cpp \
   flatfile.cpp \
   httprpc.cpp \
@@ -304,8 +324,26 @@ libbitcoin_server_a_SOURCES = \
   init.cpp \
   interfaces/chain.cpp \
   interfaces/node.cpp \
+  masternode/activemasternode.cpp \
+  masternode/activemasternode.h \
+  masternode/masternode-budget.cpp \
+  masternode/masternode-budget.h \
+  masternode/masternodeconfig.cpp \
+  masternode/masternodeconfig.h \
+  masternode/masternode.cpp \
+  masternode/masternode.h \
+  masternode/masternodeman.cpp \
+  masternode/masternodeman.h \
+  masternode/masternode-payments.cpp \
+  masternode/masternode-payments.h \
+  masternode/masternode-sync.cpp \
+  masternode/masternode-sync.h \
   miner.cpp \
+  mn_processing.cpp \
+  nodeconfig.cpp \
+  nodediag.cpp \
   net.cpp \
+  netfulfilledman.cpp \
   net_processing.cpp \
   node/coin.cpp \
   node/coinstats.cpp \
@@ -321,6 +359,8 @@ libbitcoin_server_a_SOURCES = \
   pos.cpp \
   rest.cpp \
   rpc/blockchain.cpp \
+  rpc/budget.cpp \
+  rpc/masternode.cpp \
   rpc/mining.cpp \
   rpc/misc.cpp \
   rpc/net.cpp \
@@ -590,7 +630,6 @@ endif
 bitcoin_bin_ldadd = \
   $(LIBBITCOIN_SERVER) \
   $(LIBBITCOIN_WALLET) \
-  $(LIBBITCOIN_SERVER) \
   $(LIBBITCOIN_COMMON) \
   $(LIBBITCOIN_UTIL) \
   $(LIBUNIVALUE) \
@@ -661,7 +700,23 @@ bitcoin_wallet_SOURCES = bitcoin-wallet.cpp
 bitcoin_wallet_CPPFLAGS = $(bitcoin_bin_cppflags)
 bitcoin_wallet_CXXFLAGS = $(bitcoin_bin_cxxflags)
 bitcoin_wallet_LDFLAGS = $(bitcoin_bin_ldflags)
-bitcoin_wallet_LDADD = $(LIBBITCOIN_SERVER) $(LIBBITCOIN_WALLET_TOOL) $(bitcoin_bin_ldadd)
+bitcoin_wallet_LDADD = $(LIBBITCOIN_WALLET_TOOL) $(bitcoin_bin_ldadd)
+
+bitcoin_wallet_LDADD += \
+  $(LIBBITCOIN_SERVER) \
+  $(LIBBITCOIN_WALLET) \
+  $(LIBBITCOIN_COMMON) \
+  $(LIBBITCOIN_UTIL) \
+  $(LIBUNIVALUE) \
+  $(LIBBITCOIN_ZMQ) \
+  $(LIBBITCOIN_CONSENSUS) \
+  $(LIBBITCOIN_CRYPTO) \
+  $(LIBLEVELDB) \
+  $(LIBLEVELDB_SSE42) \
+  $(LIBMEMENV) \
+  $(LIBSECP256K1)
+
+bitcoin_wallet_LDADD += $(BOOST_LIBS) $(BDB_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(MINIUPNPC_LIBS) $(ZMQ_LIBS)
 
 if TARGET_WINDOWS
 bitcoin_wallet_SOURCES += bitcoin-wallet-res.rc
@@ -698,6 +753,9 @@ CLEANFILES += compat/*.gcda compat/*.gcno
 CLEANFILES += consensus/*.gcda consensus/*.gcno
 CLEANFILES += crc32c/src/*.gcda crc32c/src/*.gcno
 CLEANFILES += crypto/*.gcda crypto/*.gcno
+CLEANFILES += crown/*.gcda crown/*.gcno
+CLEANFILES += masternode/*.gcda masternode/*.gcno
+CLEANFILES += pos/*.gcda pos/*.gcno
 CLEANFILES += index/*.gcda index/*.gcno
 CLEANFILES += interfaces/*.gcda interfaces/*.gcno
 CLEANFILES += node/*.gcda node/*.gcno

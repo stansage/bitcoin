@@ -92,6 +92,7 @@ public:
     const CCheckpointData& Checkpoints() const { return checkpointData; }
     const ChainTxData& TxData() const { return chainTxData; }
     uint64_t MinimumConnectionsForStaking() const { return nMinimumConnectionsForStaking; }
+    int FulfilledRequestExpireTime() const { return nFulfilledRequestExpireTime; }
 protected:
     CChainParams() {}
 
@@ -114,6 +115,7 @@ protected:
     CCheckpointData checkpointData;
     ChainTxData chainTxData;
     uint64_t nMinimumConnectionsForStaking;
+    int nFulfilledRequestExpireTime;
 };
 
 /**

@@ -111,6 +111,9 @@ public:
     /// not block and immediately returns false.
     bool BlockUntilSyncedToCurrentChain() const;
 
+    /// Is the txindex thread in sync with the current chain?
+    bool IsTxIndexSynced() const;
+
     void Interrupt();
 
     /// Start initializes the sync state and registers the instance as a
