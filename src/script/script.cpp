@@ -4,10 +4,20 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <script/script.h>
-
+#include <tinyformat.h>
 #include <util/strencodings.h>
 
 #include <string>
+
+namespace {
+    inline std::string ValueString(const std::vector<unsigned char>& vch)
+    {
+        if (vch.size() <= 4)
+            return strprintf("%d", CScriptNum(vch, false).getint());
+        else
+            return HexStr(vch);
+    }
+} // anon namespace
 
 std::string GetOpName(opcodetype opcode)
 {
@@ -270,6 +280,29 @@ bool CScript::IsPushOnly() const
     return this->IsPushOnly(begin());
 }
 
+std::string CScript::ToString() const
+{
+    std::string str;
+    opcodetype opcode;
+    std::vector<unsigned char> vch;
+    const_iterator pc = begin();
+    while (pc < end())
+    {
+        if (!str.empty())
+            str += " ";
+        if (!GetOp(pc, opcode, vch))
+        {
+            str += "[error]";
+            return str;
+        }
+        if (0 <= opcode && opcode <= OP_PUSHDATA4)
+            str += ValueString(vch);
+        else
+            str += GetOpName(opcode);
+    }
+    return str;
+}
+
 std::string CScriptWitness::ToString() const
 {
     std::string ret = "CScriptWitness(";
@@ -353,4 +386,33 @@ bool IsOpSuccess(const opcodetype& opcode)
            (opcode >= 131 && opcode <= 134) || (opcode >= 137 && opcode <= 138) ||
            (opcode >= 141 && opcode <= 142) || (opcode >= 149 && opcode <= 153) ||
            (opcode >= 187 && opcode <= 254);
+}
+
+bool CScript::IsNormalPaymentScript() const
+{
+    if(this->size() != 25) return false;
+
+    std::string str;
+    opcodetype opcode;
+    const_iterator pc = begin();
+    int i = 0;
+    while (pc < end())
+    {
+        GetOp(pc, opcode);
+
+        if(     i == 0 && opcode != OP_DUP) return false;
+        else if(i == 1 && opcode != OP_HASH160) return false;
+        else if(i == 3 && opcode != OP_EQUALVERIFY) return false;
+        else if(i == 4 && opcode != OP_CHECKSIG) return false;
+        else if(i == 5) return false;
+
+        i++;
+    }
+
+    return true;
+}
+
+bool CScript::IsProofOfStakeMarker() const
+{
+    return (this->size() > 1 && (*this)[0] == OP_PROOFOFSTAKE);
 }

@@ -139,6 +139,7 @@ class CNetAddr
     public:
         CNetAddr();
         explicit CNetAddr(const struct in_addr& ipv4Addr);
+        explicit CNetAddr(const std::string &strIp, bool fAllowLookup = false);   // legacy
         void SetIP(const CNetAddr& ip);
 
         /**
@@ -508,6 +509,7 @@ class CService : public CNetAddr
         CService(const CNetAddr& ip, uint16_t port);
         CService(const struct in_addr& ipv4Addr, uint16_t port);
         explicit CService(const struct sockaddr_in& addr);
+        explicit CService(const std::string& strIpPort, bool fAllowLookup = false);
         uint16_t GetPort() const;
         bool GetSockAddr(struct sockaddr* paddr, socklen_t *addrlen) const;
         bool SetSockAddr(const struct sockaddr* paddr);

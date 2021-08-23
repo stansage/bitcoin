@@ -181,7 +181,7 @@ double GetEstimatedAnnualROI()
     CBlockIndex* pindex = pindexBestHeader == 0 ? ::ChainActive().Tip() : pindexBestHeader;
     int nHeight = pindex ? pindex->nHeight : 0;
     const Consensus::Params& consensusParams = Params().GetConsensus();
-    double subsidy = GetBlockSubsidy(nHeight, consensusParams);
+    double subsidy = GetSubsidy(pindex->nHeight, 0, consensusParams);
     double numberBlocksPerDay = 86400 / consensusParams.nPowTargetSpacing;
     if(networkWeight > 0)
     {
@@ -2110,7 +2110,7 @@ static RPCHelpMan getblockstats()
     ret_all.pushKV("minfeerate", (minfeerate == MAX_MONEY) ? 0 : minfeerate);
     ret_all.pushKV("mintxsize", mintxsize == MAX_BLOCK_SERIALIZED_SIZE ? 0 : mintxsize);
     ret_all.pushKV("outs", outputs);
-    ret_all.pushKV("subsidy", GetBlockSubsidy(pindex->nHeight, Params().GetConsensus()));
+    ret_all.pushKV("subsidy", GetSubsidy(pindex->nHeight, totalfee, Params().GetConsensus()));
     ret_all.pushKV("swtotal_size", swtotal_size);
     ret_all.pushKV("swtotal_weight", swtotal_weight);
     ret_all.pushKV("swtxs", swtxs);
@@ -2611,3 +2611,5 @@ static const CRPCCommand commands[] =
         t.appendCommand(c.name, &c);
     }
 }
+
+NodeContext* g_rpc_node = nullptr;

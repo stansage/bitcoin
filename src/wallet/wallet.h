@@ -195,6 +195,7 @@ struct CRecipient
 
 typedef std::map<std::string, std::string> mapValue_t;
 
+std::shared_ptr<CWallet> GetMainWallet();
 
 static inline void ReadOrderPos(int64_t& nOrderPos, mapValue_t& mapValue)
 {
@@ -1310,6 +1311,11 @@ public:
 
     //! Add a descriptor to the wallet, return a ScriptPubKeyMan & associated output type
     ScriptPubKeyMan* AddWalletDescriptor(WalletDescriptor& desc, const FlatSigningProvider& signing_provider, const std::string& label, bool internal);
+
+    bool GetMasternodeVinAndKeys(CTxIn& txinRet, CPubKey& pubKeyRet, CKey& keyRet);
+    bool GetSystemnodeVinAndKeys(CTxIn& txinRet, CPubKey& pubKeyRet, CKey& keyRet);
+    bool GetVinAndKeysFromOutput(COutput out, CTxIn& txinRet, CPubKey& pubKeyRet, CKey& keyRet);
+    bool GetBudgetSystemCollateralTX(CTransactionRef& tx, uint256 hash);
 
     /* Start staking BTCs */
     void StartStake(CConnman* connman = CWallet::defaultConnman, ChainstateManager* chainman = CWallet::defaultChainman, CTxMemPool* mempool = CWallet::defaultMempool);

@@ -178,7 +178,11 @@ struct CNodeStateStats {
 bool GetNodeStateStats(NodeId nodeid, CNodeStateStats &stats);
 
 /** Relay transaction to every node */
-void RelayTransaction(const uint256& txid, const uint256& wtxid, const CConnman& connman) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
+void RelayTransaction(const CInv& inv, const CConnman& connman);
+void RelayTransaction(const uint256& txid, const uint256& wtxid, const CConnman& connman);
+
+/** Misbehaving routine for external functions */
+void Misbehaving(const NodeId pnode, const int howmuch, const std::string& message="");
 
 /** Clean block index */
 void CleanBlockIndex();

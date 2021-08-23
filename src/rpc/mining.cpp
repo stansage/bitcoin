@@ -458,7 +458,7 @@ static RPCHelpMan getmininginfo()
     diff.pushKV("search-interval", (int)lastCoinStakeSearchInterval);
     obj.pushKV("difficulty",       diff);
     const Consensus::Params& consensusParams = Params().GetConsensus();
-    obj.pushKV("blockvalue",    (uint64_t)GetBlockSubsidy(::ChainActive().Height(), consensusParams));
+    obj.pushKV("blockvalue",    (uint64_t)GetSubsidy(::ChainActive().Height(), 0, consensusParams));
     obj.pushKV("netmhashps",       GetPoWMHashPS());
     obj.pushKV("netstakeweight",   GetPoSKernelPS());
     obj.pushKV("errors",           GetWarnings("statusbar").original);

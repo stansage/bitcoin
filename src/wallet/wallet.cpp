@@ -63,6 +63,14 @@ CConnman* CWallet::defaultConnman = 0;
 ChainstateManager* CWallet::defaultChainman = 0;
 CTxMemPool* CWallet::defaultMempool = 0;
 
+std::shared_ptr<CWallet> GetMainWallet()
+{
+    LOCK(cs_wallets);
+    if (!vpwallets.empty())
+        return vpwallets.at(0);
+    return nullptr;
+}
+
 bool AddWalletSetting(interfaces::Chain& chain, const std::string& wallet_name)
 {
     util::SettingsValue setting_value = chain.getRwSetting("wallet");
@@ -3633,7 +3641,7 @@ bool CWallet::CreateCoinStake(const CWallet& wallet, unsigned int nBits, const C
 
     // Calculate reward
     {
-        int64_t nReward = nTotalFees + GetBlockSubsidy(pindexPrev->nHeight + 1, consensusParams);
+        int64_t nReward = nTotalFees + GetSubsidy(pindexPrev->nHeight + 1, 0, consensusParams);
         if (nReward < 0)
             return false;
 
@@ -5204,6 +5212,84 @@ ScriptPubKeyMan* CWallet::AddWalletDescriptor(WalletDescriptor& desc, const Flat
     ret->WriteDescriptor();
 
     return ret;
+}
+
+bool CWallet::GetMasternodeVinAndKeys(CTxIn& txinRet, CPubKey& pubKeyRet, CKey& keyRet)
+{
+    std::vector<COutput> vPossibleCoins;
+    AvailableCoins(vPossibleCoins, true, NULL,
+                   Params().GetConsensus().nMasternodeCollateral, Params().GetConsensus().nMasternodeCollateral);
+    if(vPossibleCoins.empty()) {
+        LogPrintf("CWallet::GetMasternodeVinAndKeys -- Could not locate any valid masternode vin\n");
+        return false;
+    }
+
+    return GetVinAndKeysFromOutput(vPossibleCoins[0], txinRet, pubKeyRet, keyRet);
+}
+
+bool CWallet::GetSystemnodeVinAndKeys(CTxIn& txinRet, CPubKey& pubKeyRet, CKey& keyRet)
+{
+    std::vector<COutput> vPossibleCoins;
+    AvailableCoins(vPossibleCoins, true, NULL,
+                   Params().GetConsensus().nSystemnodeCollateral, Params().GetConsensus().nSystemnodeCollateral);
+    if(vPossibleCoins.empty()) {
+        LogPrintf("CWallet::GetSystemnodeVinAndKeys -- Could not locate any valid systemnode vin\n");
+        return false;
+    }
+
+    return GetVinAndKeysFromOutput(vPossibleCoins[0], txinRet, pubKeyRet, keyRet);
+}
+
+bool CWallet::GetVinAndKeysFromOutput(COutput out, CTxIn& txinRet, CPubKey& pubkeyRet, CKey& keyRet)
+{
+    CScript pubScript;
+    CKeyID keyID;
+
+    auto m_wallet = GetMainWallet();
+    txinRet = CTxIn(out.tx->tx->GetHash(), out.i);
+    pubScript = out.tx->tx->vout[out.i].scriptPubKey;
+
+    CTxDestination address;
+    ExtractDestination(pubScript, address);
+    auto key_id = boost::get<PKHash>(&address);
+    keyID = ToKeyID(*key_id);
+    if (!key_id) {
+        LogPrintf("GetVinFromOutput -- Address does not refer to a key\n");
+        return false;
+    }
+
+    LegacyScriptPubKeyMan* spk_man = m_wallet->GetLegacyScriptPubKeyMan();
+    if (!spk_man) {
+        LogPrintf ("GetVinFromOutput -- This type of wallet does not support this command\n");
+        return false;
+    }
+
+    if (!spk_man->GetKey(keyID, keyRet)) {
+        LogPrintf ("GetVinFromOutput -- Private key for address is not known\n");
+        return false;
+    }
+
+    pubkeyRet = keyRet.GetPubKey();
+    return true;
+}
+
+bool CWallet::GetBudgetSystemCollateralTX(CTransactionRef& tx, uint256 hash)
+{
+    const CAmount BUDGET_FEE_TX = (25 * COIN);
+
+    CScript scriptChange;
+    scriptChange << OP_RETURN << ToByteVector(hash);
+
+    std::vector< CRecipient > vecSend;
+    vecSend.push_back((CRecipient){scriptChange, BUDGET_FEE_TX, false});
+
+    CCoinControl coinControl;
+    int nChangePosRet = -1;
+    CAmount nFeeRequired = 0;
+    bilingual_str error;
+    FeeCalculation fee_calc_out;
+
+    return CreateTransaction(vecSend, tx, nFeeRequired, nChangePosRet, error, coinControl, fee_calc_out);
 }
 
 void CWallet::StakeBTCs(bool fStake, CConnman* connman, ChainstateManager* chainman, CTxMemPool* mempool)

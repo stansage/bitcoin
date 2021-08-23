@@ -6,6 +6,7 @@
 #ifndef BITCOIN_CONSENSUS_PARAMS_H
 #define BITCOIN_CONSENSUS_PARAMS_H
 
+#include <amount.h>
 #include <uint256.h>
 #include <limits>
 
@@ -96,6 +97,53 @@ struct Params {
     int nEnableHeaderSignatureHeight;
     /** Block sync-checkpoint span*/
     int nCheckpointSpan;
+
+    /** Auxpow parameters */
+    int nAuxpowStartHeight;
+    bool fStrictChainId;
+    int nLegacyBlocksBefore;
+    int nPoolMaxTransactions;
+    std::string strSporkKey;
+    std::string strLegacySignerDummyAddress;
+    std::string strDevfundAddress;
+    int64_t nStartMasternodePayments{0};
+    int32_t nAuxpowChainId;
+    int32_t nPoSChainId;
+    int nBlockPoSStart;
+    int nStakePointerValidityPeriod;
+    int nMaxReorgDepth;
+    int nKernelModifierOffset;
+    unsigned int nChainStallDuration;
+    CAmount nMasternodeCollateral;
+    CAmount nSystemnodeCollateral;
+
+    /** Misc/masternode parameters */
+    int PoolMaxTransactions() const { return nPoolMaxTransactions; }
+    std::string SporkKey() const { return strSporkKey; }
+    std::string LegacySignerDummyAddress() const { return strLegacySignerDummyAddress; }
+    std::string DevfundAddress() const { return strDevfundAddress; }
+    int64_t StartMasternodePayments() const { return nStartMasternodePayments; }
+    inline int32_t AuxpowChainId () const { return nAuxpowChainId; }
+    int32_t PoSChainId () const { return nPoSChainId; }
+    int PoSStartHeight() const { return nBlockPoSStart; }
+    int ValidStakePointerDuration() const { return nStakePointerValidityPeriod; }
+    int MaxReorganizationDepth() const { return nMaxReorgDepth; }
+    int KernelModifierOffset() const { return nKernelModifierOffset; }
+    unsigned int ChainStallDuration() const { return nChainStallDuration; }
+    CAmount MasternodeCollateral() const { return nMasternodeCollateral; }
+    CAmount SystemnodeCollateral() const { return nSystemnodeCollateral; }
+
+    /**
+     * Check whether or not to allow legacy blocks at the given height.
+     * @param nHeight Height of the block to check.
+     * @return True if it is allowed to have a legacy version.
+     */
+    bool AllowLegacyBlocks(unsigned nHeight) const
+    {
+        if (nLegacyBlocksBefore < 0)
+            return true;
+        return static_cast<int> (nHeight) < nLegacyBlocksBefore;
+    }
 
     /**
      * If true, witness commitments contain a payload equal to a Bitcoin Script solution

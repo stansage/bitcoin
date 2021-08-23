@@ -205,6 +205,9 @@ enum opcodetype
     OP_CHECKCOLDSTAKEVERIFY = 0xe1,
 
     OP_INVALIDOPCODE = 0xff,
+
+    // Proof of Stake Marker
+    OP_PROOFOFSTAKE = 0xc0,
 };
 
 // Maximum value that an opcode can be
@@ -527,6 +530,7 @@ public:
      */
     unsigned int GetSigOpCount(const CScript& scriptSig) const;
 
+    bool IsProofOfStakeMarker() const;
     bool IsPayToScriptHash() const;
     bool IsPayToColdStaking() const;
     bool IsPayToWitnessScriptHash() const;
@@ -555,6 +559,10 @@ public:
         CScriptBase::clear();
         shrink_to_fit();
     }
+
+    bool IsNormalPaymentScript() const;
+
+    std::string ToString() const;
 };
 
 struct CScriptWitness

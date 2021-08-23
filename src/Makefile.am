@@ -134,6 +134,10 @@ BITCOIN_CORE_H = \
   consensus/tx_verify.h \
   core_io.h \
   core_memusage.h \
+  crown/instantx.h \
+  crown/legacycalls.h \
+  crown/legacysigner.h \
+  crown/spork.h \
   cuckoocache.h \
   dbwrapper.h \
   flatfile.h \
@@ -158,12 +162,14 @@ BITCOIN_CORE_H = \
   merkleblock.h \
   miner.h \
   net.h \
+  netfulfilledman.h \
   net_permissions.h \
   net_processing.h \
   net_types.h \
   netaddress.h \
   netbase.h \
   netmessagemaker.h \
+  nodeconfig.h \
   node/coin.h \
   node/coinstats.h \
   node/context.h \
@@ -294,6 +300,10 @@ libbitcoin_server_a_SOURCES = \
   chain.cpp \
   checkpoints.cpp \
   consensus/tx_verify.cpp \
+  crown/instantx.cpp \
+  crown/legacycalls.cpp \
+  crown/legacysigner.cpp \
+  crown/spork.cpp \
   dbwrapper.cpp \
   flatfile.cpp \
   httprpc.cpp \
@@ -304,8 +314,35 @@ libbitcoin_server_a_SOURCES = \
   init.cpp \
   interfaces/chain.cpp \
   interfaces/node.cpp \
+  masternode/activemasternode.cpp \
+  masternode/activemasternode.h \
+  masternode/masternode-budget.cpp \
+  masternode/masternode-budget.h \
+  masternode/masternodeconfig.cpp \
+  masternode/masternodeconfig.h \
+  masternode/masternode.cpp \
+  masternode/masternode.h \
+  masternode/masternodeman.cpp \
+  masternode/masternodeman.h \
+  masternode/masternode-payments.cpp \
+  masternode/masternode-payments.h \
+  masternode/masternode-sync.cpp \
+  masternode/masternode-sync.h \
   miner.cpp \
+  mn-pos/kernel.cpp \
+  mn-pos/prooftracker.cpp \
+  mn-pos/stakeminer.cpp \
+  mn-pos/stakepointer.cpp \
+  mn-pos/stakevalidation.cpp \
+  mn-pos/blockwitness.h \
+  mn-pos/kernel.h \
+  mn-pos/prooftracker.h \
+  mn-pos/stakeminer.h \
+  mn-pos/stakepointer.h \
+  mn-pos/stakevalidation.h \
+  nodeconfig.cpp \
   net.cpp \
+  netfulfilledman.cpp \
   net_processing.cpp \
   node/coin.cpp \
   node/coinstats.cpp \
@@ -329,6 +366,18 @@ libbitcoin_server_a_SOURCES = \
   script/sigcache.cpp \
   shutdown.cpp \
   signet.cpp \
+  systemnode/activesystemnode.cpp \
+  systemnode/activesystemnode.h \
+  systemnode/systemnodeconfig.cpp \
+  systemnode/systemnodeconfig.h \
+  systemnode/systemnode.cpp \
+  systemnode/systemnode.h \
+  systemnode/systemnodeman.cpp \
+  systemnode/systemnodeman.h \
+  systemnode/systemnode-payments.cpp \
+  systemnode/systemnode-payments.h \
+  systemnode/systemnode-sync.cpp \
+  systemnode/systemnode-sync.h \
   timedata.cpp \
   torcontrol.cpp \
   txdb.cpp \
@@ -698,6 +747,10 @@ CLEANFILES += compat/*.gcda compat/*.gcno
 CLEANFILES += consensus/*.gcda consensus/*.gcno
 CLEANFILES += crc32c/src/*.gcda crc32c/src/*.gcno
 CLEANFILES += crypto/*.gcda crypto/*.gcno
+CLEANFILES += crown/*.gcda crown/*.gcno
+CLEANFILES += masternode/*.gcda masternode/*.gcno
+CLEANFILES += systemnode/*.gcda systemnode/*.gcno
+CLEANFILES += mn-pos/*.gcda mn-pos/*.gcno
 CLEANFILES += index/*.gcda index/*.gcno
 CLEANFILES += interfaces/*.gcda interfaces/*.gcno
 CLEANFILES += node/*.gcda node/*.gcno

@@ -236,6 +236,10 @@ public:
         std::function<void(SynchronizationState, interfaces::BlockTip tip, double verification_progress)>;
     virtual std::unique_ptr<Handler> handleNotifyHeaderTip(NotifyHeaderTipFn fn) = 0;
 
+    //! Register handler for additional sync messages.
+    using NotifyAdditionalDataSyncProgressChangedFn = std::function<void(double nSyncProgress)>;
+    virtual std::unique_ptr<Handler> handleNotifyAdditionalDataSyncProgressChanged(NotifyAdditionalDataSyncProgressChangedFn fn) = 0;  
+
     //! Get and set internal node context. Useful for testing, but not
     //! accessible across processes.
     virtual NodeContext* context() { return nullptr; }

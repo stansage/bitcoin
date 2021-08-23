@@ -330,6 +330,30 @@ bool CheckSequenceLocks(const CTxMemPool& pool, const CTransaction& tx, int flag
     return EvaluateSequenceLocks(index, lockPair);
 }
 
+bool GetUTXOCoin(const COutPoint& outpoint, Coin& coin)
+{
+    LOCK(cs_main);
+    if (!::ChainstateActive().CoinsTip().GetCoin(outpoint, coin))
+        return false;
+    if (coin.IsSpent())
+        return false;
+    return true;
+}
+
+int GetUTXOHeight(const COutPoint& outpoint)
+{
+    // -1 means UTXO is yet unknown or already spent
+    Coin coin;
+    return GetUTXOCoin(outpoint, coin) ? coin.nHeight : -1;
+}
+
+int GetUTXOConfirmations(const COutPoint& outpoint)
+{
+    // -1 means UTXO is yet unknown or already spent
+    LOCK(cs_main);
+    int nPrevoutHeight = GetUTXOHeight(outpoint);
+    return (nPrevoutHeight > -1 && ::ChainActive().Tip()) ? ::ChainActive().Height() - nPrevoutHeight + 1 : -1;
+}
 // Returns the script flags which should be checked for a given block
 static unsigned int GetBlockScriptFlags(const CBlockIndex* pindex, const Consensus::Params& chainparams);
 
@@ -1312,17 +1336,57 @@ bool ReadRawBlockFromDisk(std::vector<uint8_t>& block, const CBlockIndex* pindex
     return ReadRawBlockFromDisk(block, block_pos, message_start);
 }
 
-CAmount GetBlockSubsidy(int nHeight, const Consensus::Params& consensusParams)
+CAmount GetSubsidy(int nHeight, const CAmount& nFees, const Consensus::Params& consensusParams)
 {
+    int64_t nSubsidy = 12 * COIN;
+    if (nHeight >= consensusParams.PoSStartHeight()) {
+        nSubsidy = 10 * COIN;
+    }
+
     int halvings = nHeight / consensusParams.nSubsidyHalvingInterval;
+
     // Force block reward to zero when right shift is undefined.
     if (halvings >= 64)
-        return 0;
+        return nFees;
 
-    CAmount nSubsidy = 50 * COIN;
-    // Subsidy is cut in half every 210,000 blocks which will occur approximately every 4 years.
+    // Subsidy is cut in half every 2,100,000 blocks which will occur approximately every 4 years.
     nSubsidy >>= halvings;
     return nSubsidy;
+}
+
+CAmount GetBlockValue(int nHeight, const CAmount& nFees, const Consensus::Params& consensusParams)
+{
+    CAmount nSubsidy = GetSubsidy(nHeight, nFees, consensusParams);
+    CAmount budgetValue = nSubsidy * 0.25;
+    if (Params().NetworkIDString() == CBaseChainParams::TESTNET) {
+        if (nHeight > 20000)
+            nSubsidy -= budgetValue;
+    } else {
+        if (nHeight > 1265000)
+            nSubsidy -= budgetValue;
+    }
+
+    return nSubsidy + nFees;
+}
+
+CAmount GetMasternodePayment(int nHeight, CAmount blockValue, const Consensus::Params& consensusParams)
+{
+    // 25% percent is already taken for budget
+    CAmount ret = (blockValue * 37.5) / 75;
+    if (nHeight >= consensusParams.PoSStartHeight()) {
+        ret = (blockValue * 37) / 75;
+    }
+    return ret;
+}
+
+CAmount GetSystemnodePayment(int nHeight, CAmount blockValue, const Consensus::Params& consensusParams)
+{
+    // 25% percent is already taken for budget
+    CAmount ret = (blockValue * 7.5) / 75;
+    if (nHeight >= consensusParams.PoSStartHeight()) {
+        ret = (blockValue * 8) / 75;
+    }
+    return ret;
 }
 
 CoinsViews::CoinsViews(
@@ -2112,7 +2176,7 @@ bool CheckReward(const CBlock& block, BlockValidationState& state, int nHeight, 
     if (block.IsProofOfWork())
     {
         // Check proof-of-work reward
-        CAmount blockReward = nFees + GetBlockSubsidy(nHeight, consensusParams);
+    	CAmount blockReward = GetBlockValue(nHeight, nFees, consensusParams);
         if (block.vtx[offset]->GetValueOut() > blockReward) {
             LogPrintf("CheckReward(): coinbase pays too much (actual=%d vs limit=%d)\n", block.vtx[offset]->GetValueOut(), blockReward);
             return state.Invalid(BlockValidationResult::BLOCK_CONSENSUS, "bad-cb-amount");
@@ -2121,7 +2185,7 @@ bool CheckReward(const CBlock& block, BlockValidationState& state, int nHeight, 
     else
     {
         // Check full reward
-        CAmount blockReward = nFees + GetBlockSubsidy(nHeight, consensusParams);
+    	CAmount blockReward = GetBlockValue(nHeight, nFees, consensusParams);
         if (nActualStakeReward > blockReward) {
             LogPrintf("CheckReward(): coinstake pays too much (actual=%d vs limit=%d)\n", nActualStakeReward, blockReward);
             return state.Invalid(BlockValidationResult::BLOCK_CONSENSUS, "bad-cs-amount");
@@ -2551,6 +2615,7 @@ bool CChainState::ConnectBlock(const CBlock& block, BlockValidationState& state,
     int64_t nTime3 = GetTimeMicros(); nTimeConnect += nTime3 - nTime2;
     LogPrint(BCLog::BENCH, "      - Connect %u transactions: %.2fms (%.3fms/tx, %.3fms/txin) [%.2fs (%.2fms/blk)]\n", (unsigned)block.vtx.size(), MILLI * (nTime3 - nTime2), MILLI * (nTime3 - nTime2) / block.vtx.size(), nInputs <= 1 ? 0 : MILLI * (nTime3 - nTime2) / (nInputs-1), nTimeConnect * MICRO, nTimeConnect * MILLI / nBlocksTotal);
 
+    const int nHeight =  pindex->pprev->nHeight;
     if (!CheckReward(block, state, pindex->nHeight, chainparams.GetConsensus(), nFees, nActualStakeReward))
         return state.Invalid(BlockValidationResult::BLOCK_CONSENSUS, "block-reward-invalid");
 

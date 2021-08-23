@@ -260,6 +260,25 @@ extern const char* CFCHECKPT;
  * @since protocol version 70016 as described by BIP 339.
  */
 extern const char* WTXIDRELAY;
+extern const char* IX;
+extern const char* IXLOCKVOTE;
+extern const char* SPORK;
+extern const char* GETSPORKS;
+extern const char* MNBROADCAST;
+extern const char* MNPING;
+extern const char* MNWINNER;
+extern const char* GETMNWINNERS;
+extern const char* BUDGETPROPOSAL;
+extern const char* BUDGETVOTE;
+extern const char* BUDGETVOTESYNC;
+extern const char* FINALBUDGET;
+extern const char* FINALBUDGETVOTE;
+extern const char* SYNCSTATUSCOUNT;
+extern const char* DSEG;
+extern const char* DSEEP;
+extern const char* SYSWINNER;
+extern const char* SYSBROADCAST;
+extern const char* SYSPING;
 }; // namespace NetMsgType
 
 /* Get a vector of all valid message types (see above) */
@@ -415,7 +434,22 @@ enum GetDataMsg : uint32_t {
     MSG_WTX = 5,                                      //!< Defined in BIP 339
     // The following can only occur in getdata. Invs always use TX/WTX or BLOCK.
     MSG_FILTERED_BLOCK = 3,                           //!< Defined in BIP37
-    MSG_CMPCT_BLOCK = 4,                              //!< Defined in BIP152
+    MSG_TXLOCK_REQUEST = 4,
+    MSG_TXLOCK_VOTE = 5,
+    MSG_SPORK = 6,
+    MSG_MASTERNODE_WINNER = 7,
+    MSG_MASTERNODE_SCANNING_ERROR = 8,
+    MSG_BUDGET_VOTE = 9,
+    MSG_BUDGET_PROPOSAL = 10,
+    MSG_BUDGET_FINALIZED = 11,
+    MSG_BUDGET_FINALIZED_VOTE = 12,
+    MSG_MASTERNODE_QUORUM = 13,
+    MSG_MASTERNODE_ANNOUNCE = 14,
+    MSG_MASTERNODE_PING = 15,
+    MSG_SYSTEMNODE_ANNOUNCE = 16,
+    MSG_SYSTEMNODE_PING = 17,
+    MSG_SYSTEMNODE_WINNER = 18,
+    MSG_CMPCT_BLOCK = 19, //!< Defined in BIP152 (moved from 4)
     MSG_WITNESS_BLOCK = MSG_BLOCK | MSG_WITNESS_FLAG, //!< Defined in BIP144
     MSG_WITNESS_TX = MSG_TX | MSG_WITNESS_FLAG,       //!< Defined in BIP144
     // MSG_FILTERED_WITNESS_BLOCK is defined in BIP144 as reserved for future

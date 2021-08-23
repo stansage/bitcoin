@@ -8,6 +8,7 @@
 #include <crypto/common.h>
 #include <crypto/sha3.h>
 #include <hash.h>
+#include <netbase.h>
 #include <prevector.h>
 #include <tinyformat.h>
 #include <util/asmap.h>
@@ -987,6 +988,13 @@ CSubNet::CSubNet():
     valid(false)
 {
     memset(netmask, 0, sizeof(netmask));
+}
+
+CService::CService(const std::string& strIpPort, bool fAllowLookup)
+{
+    CService ip;
+    if (Lookup(strIpPort.c_str(), ip, 0, fAllowLookup))
+        *this = ip;
 }
 
 CSubNet::CSubNet(const CNetAddr& addr, uint8_t mask) : CSubNet()

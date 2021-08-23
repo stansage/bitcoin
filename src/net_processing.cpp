@@ -180,9 +180,6 @@ std::multimap<uint256, COrphanBlock*> mapOrphanBlocksByPrev GUARDED_BY(cs_main);
 std::set<std::pair<COutPoint, unsigned int>> setStakeSeenOrphan GUARDED_BY(cs_main);
 size_t nOrphanBlocksSize = 0;
 
-/** Increase a node's misbehavior score. */
-void Misbehaving(const NodeId nodeid, const int howmuch, const std::string& message="") EXCLUSIVE_LOCKS_REQUIRED(cs_main);
-
 // Internal stuff
 namespace {
     /** Number of nodes with fSyncStarted. */
@@ -1564,6 +1561,14 @@ bool static AlreadyHaveBlock(const uint256& block_hash) EXCLUSIVE_LOCKS_REQUIRED
     return LookupBlockIndex(block_hash) != nullptr;
 }
 
+void RelayTransaction(const CInv& inv, const CConnman& connman)
+{
+    connman.ForEachNode([&inv](CNode* pnode) EXCLUSIVE_LOCKS_REQUIRED(::cs_main)
+    {
+        pnode->PushInventory(inv);
+    });
+}
+
 void RelayTransaction(const uint256& txid, const uint256& wtxid, const CConnman& connman)
 {
     connman.ForEachNode([&txid, &wtxid](CNode* pnode) EXCLUSIVE_LOCKS_REQUIRED(::cs_main) {
@@ -2406,25 +2411,6 @@ static void ProcessGetCFCheckPt(CNode& peer, CDataStream& vRecv, const CChainPar
     connman.PushMessage(&peer, std::move(msg));
 }
 
-static bool IsValidNodeProtocolVersion(CNode& pfrom, const int nVersion, const CChainParams& chain_params)
-{
-    int minPeerProtoVersion;
-    if (::ChainActive().Height() < chain_params.GetConsensus().BTCColdStakeEnableHeight) {
-        minPeerProtoVersion = OLD_MIN_PEER_PROTO_VERSION;
-    } else {
-        minPeerProtoVersion = MIN_PEER_PROTO_VERSION;
-    }
-
-    if (nVersion < minPeerProtoVersion) {
-        // disconnect from peers older than this proto version
-        LogPrint(BCLog::NET, "peer=%d using obsolete version %i; disconnecting\n", pfrom.GetId(), nVersion);
-        pfrom.fDisconnect = true;
-        return false;
-    }
-
-    return true;
-}
-
 void PeerManager::ProcessMessage(CNode& pfrom, const std::string& msg_type, CDataStream& vRecv,
                                          const std::chrono::microseconds time_received,
                                          const std::atomic<bool>& interruptMsgProc)
@@ -2434,11 +2420,6 @@ void PeerManager::ProcessMessage(CNode& pfrom, const std::string& msg_type, CDat
     {
         LogPrintf("dropmessagestest DROPPING RECV MESSAGE\n");
         return;
-    }
-
-    if (pfrom.nVersion != 0) {
-        if (!IsValidNodeProtocolVersion(pfrom, pfrom.nVersion, m_chainparams))
-            return;
     }
 
     PeerRef peer = GetPeerRef(pfrom.GetId());
@@ -2476,8 +2457,12 @@ void PeerManager::ProcessMessage(CNode& pfrom, const std::string& msg_type, CDat
             return;
         }
 
-        if (!IsValidNodeProtocolVersion(pfrom, nVersion, m_chainparams))
+        if (nVersion < MIN_PEER_PROTO_VERSION) {
+            // disconnect from peers older than this proto version
+            LogPrint(BCLog::NET, "peer=%d using obsolete version %i; disconnecting\n", pfrom.GetId(), nVersion);
+            pfrom.fDisconnect = true;
             return;
+        }
 
         if (!vRecv.empty())
             vRecv >> addrFrom >> nNonce;
@@ -4773,6 +4758,25 @@ bool PeerManager::SendMessages(CNode* pto)
     } // release cs_main
     return true;
 }
+
+void Misbehaving(const NodeId pnode, const int howmuch, const std::string& message)
+{
+    assert(howmuch > 0);
+
+    PeerRef peer = GetPeerRef(pnode);
+    if (peer == nullptr) return;
+
+    LOCK(peer->m_misbehavior_mutex);
+    peer->m_misbehavior_score += howmuch;
+    const std::string message_prefixed = message.empty() ? "" : (": " + message);
+    if (peer->m_misbehavior_score >= DISCOURAGEMENT_THRESHOLD && peer->m_misbehavior_score - howmuch < DISCOURAGEMENT_THRESHOLD) {
+        LogPrint(BCLog::NET, "Misbehaving: peer=%d (%d -> %d) DISCOURAGE THRESHOLD EXCEEDED%s\n", pnode, peer->m_misbehavior_score - howmuch, peer->m_misbehavior_score, message_prefixed);
+        peer->m_should_discourage = true;
+    } else {
+        LogPrint(BCLog::NET, "Misbehaving: peer=%d (%d -> %d)%s\n", pnode, peer->m_misbehavior_score - howmuch, peer->m_misbehavior_score, message_prefixed);
+    }
+}
+
 
 void PushGetBlocks(CNode& pnode, const CBlockIndex* pindexBegin, const uint256& hashEnd, CConnman& connman)
 {

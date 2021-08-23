@@ -76,6 +76,7 @@ public:
         consensus.BIP66Height = 1;
         consensus.CSVHeight = 1;
         consensus.SegwitHeight = 1;
+        consensus.MinBIP9WarningHeight = std::numeric_limits<int>::max();
         consensus.BTCColdStakeEnableHeight = 1000;
         consensus.powLimit = uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.posLimit = uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
@@ -106,6 +107,29 @@ public:
 
         consensus.nMinimumChainWork = uint256S("0x0000000000000000000000000000000000000000000000000000000000200020"); //block 1
         consensus.defaultAssumeValid = uint256S("0x000005cb88ef73f2fa282ee15f84be411bdeb379a0ea6df32a4679941da466aa"); //block 1
+
+	nMinimumConnectionsForStaking = 4;
+
+        //! PoS parameters
+        consensus.nBlockPoSStart = 2330000;
+        consensus.nPoSChainId = 22;
+        consensus.nStakePointerValidityPeriod = 4320;
+        consensus.nKernelModifierOffset = 100;
+
+        //! Merge mining parameters
+        consensus.nAuxpowChainId = 20;
+        consensus.nAuxpowStartHeight = 453273;
+        consensus.fStrictChainId = true;
+        consensus.nLegacyBlocksBefore = consensus.nAuxpowStartHeight;
+
+        //! Misc/masternode parameters
+        consensus.nPoolMaxTransactions = 3;
+        consensus.strSporkKey = "0440409BDACDCE03BFB6D5F16E2D414953038996B49BEE6697CFA400A0001D0837C885C5B57DAD10E5CAAAE36EE975005CC6CBD7001A2A8DE76FF12185904A9BB1";
+        consensus.strDevfundAddress = "16tg5tuZrPKoBwfbmj2tmiEPhVPzyn3gtP";
+        consensus.nMasternodeCollateral = 10000 * COIN;
+        consensus.nSystemnodeCollateral = 500 * COIN;
+        consensus.strLegacySignerDummyAddress = "18WTcWvwrNnfqeQAn6th9QQ2EpnXMq5Th8";
+        consensus.nStartMasternodePayments = 1403728576;
 
         /**
          * The message start string is designed to be unlikely to occur in normal data.
@@ -141,6 +165,8 @@ public:
 
         bech32_hrp = "bc";
 
+	nFulfilledRequestExpireTime = 60*60;
+
         vFixedSeeds = std::vector<SeedSpec6>(pnSeed6_main, pnSeed6_main + ARRAYLEN(pnSeed6_main));
 
         fDefaultConsistencyChecks = false;
@@ -160,7 +186,7 @@ public:
             /* nTxCount */ 4,
             /* dTxRate  */ 0.0261437908496732,
         };
-	nMinimumConnectionsForStaking = 4;
+
     }
 };
 

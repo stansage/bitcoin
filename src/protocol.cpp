@@ -45,7 +45,49 @@ const char *CFHEADERS="cfheaders";
 const char *GETCFCHECKPT="getcfcheckpt";
 const char *CFCHECKPT="cfcheckpt";
 const char *WTXIDRELAY="wtxidrelay";
+const char* IX = "ix";
+const char* IXLOCKVOTE = "txlvote";
+const char* SPORK = "spork";
+const char* GETSPORKS = "getsporks";
+const char* MNBROADCAST = "mnb";
+const char* MNPING = "mnp";
+const char* MNWINNER = "mnw";
+const char* GETMNWINNERS = "mnget";
+const char* BUDGETPROPOSAL = "mprop";
+const char* BUDGETVOTE = "mvote";
+const char* BUDGETVOTESYNC = "mnvs";
+const char* FINALBUDGET = "fbs";
+const char* FINALBUDGETVOTE = "fbvote";
+const char* SYNCSTATUSCOUNT = "ssc";
+const char* DSEG = "dseg";
+const char* DSEEP = "dseep";
+const char* SYSWINNER = "snw";
+const char* SYSBROADCAST = "snb";
+const char* SYSPING = "snp";
 } // namespace NetMsgType
+
+static const char* ppszTypeName[] = {
+        "ERROR",
+        "tx",
+        "block",
+        "filtered block",
+        "tx lock request",
+        "tx lock vote",
+        "spork",
+        "mn winner",
+        "mn scan error",
+        "mn budget vote",
+        "mn budget proposal",
+        "mn budget finalized",
+        "mn budget finalized vote",
+        "mn quorum",
+        "mn announce",
+        "mn ping",
+        "sn winner",
+        "sn announce",
+        "sn ping",
+        "dstx"
+};
 
 /** All known message types. Keep this in the same order as the list of
  * messages above and in protocol.h.
@@ -85,6 +127,24 @@ const static std::string allNetMessageTypes[] = {
     NetMsgType::GETCFCHECKPT,
     NetMsgType::CFCHECKPT,
     NetMsgType::WTXIDRELAY,
+    NetMsgType::IX,
+    NetMsgType::IXLOCKVOTE,
+    NetMsgType::SPORK,
+    NetMsgType::GETSPORKS,
+    NetMsgType::MNBROADCAST,
+    NetMsgType::MNPING,
+    NetMsgType::MNWINNER,
+    NetMsgType::GETMNWINNERS,
+    NetMsgType::BUDGETPROPOSAL,
+    NetMsgType::BUDGETVOTE,
+    NetMsgType::BUDGETVOTESYNC,
+    NetMsgType::FINALBUDGET,
+    NetMsgType::FINALBUDGETVOTE,
+    NetMsgType::SYNCSTATUSCOUNT,
+    NetMsgType::DSEG,
+    NetMsgType::SYSWINNER,
+    NetMsgType::SYSBROADCAST,
+    NetMsgType::SYSPING,
 };
 const static std::vector<std::string> allNetMessageTypesVec(allNetMessageTypes, allNetMessageTypes+ARRAYLEN(allNetMessageTypes));
 

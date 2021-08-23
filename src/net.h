@@ -64,6 +64,8 @@ static const int MAX_OUTBOUND_FULL_RELAY_CONNECTIONS = 8;
 static const int MAX_ADDNODE_CONNECTIONS = 8;
 /** Maximum number of block-relay-only outgoing connections */
 static const int MAX_BLOCK_RELAY_ONLY_CONNECTIONS = 2;
+/** Maximum number if outgoing masternodes */
+static const int MAX_OUTBOUND_MASTERNODE_CONNECTIONS = 8;
 /** Maximum number of feeler connections */
 static const int MAX_FEELER_CONNECTIONS = 1;
 /** -listen default */
@@ -114,6 +116,11 @@ struct CSerializedNetMsg
     std::vector<unsigned char> data;
     std::string m_type;
 };
+
+struct CAllNodes {
+    bool operator() (const CNode*) const {return true;}
+};
+static constexpr CAllNodes AllNodes{};
 
 /** Different types of connections to a peer. This enum encapsulates the
  * information we have available at the time of opening or accepting the
@@ -268,12 +275,16 @@ public:
     bool GetNetworkActive() const { return fNetworkActive; };
     bool GetUseAddrmanOutgoing() const { return m_use_addrman_outgoing; };
     void SetNetworkActive(bool active);
+    void OpenMasternodeConnection(const CAddress& addrConnect);
     void OpenNetworkConnection(const CAddress& addrConnect, bool fCountFailure, CSemaphoreGrant* grantOutbound, const char* strDest, ConnectionType conn_type);
+    void ThreadOpenMasternodeConnections();
     bool CheckIncomingNonce(uint64_t nonce);
 
     bool ForNode(NodeId id, std::function<bool(CNode* pnode)> func);
 
     void PushMessage(CNode* pnode, CSerializedNetMsg&& msg);
+
+    bool ForNode(const CService& addr, std::function<bool(const CNode* pnode)> cond, std::function<bool(CNode* pnode)> func);
 
     using NodeFn = std::function<void(CNode*)>;
     void ForEachNode(const NodeFn& func)
@@ -400,8 +411,16 @@ public:
         Variable intervals will result in privacy decrease.
     */
     int64_t PoissonNextSendInbound(int64_t now, int average_interval_seconds);
+    bool IsMasternodeOrDisconnectRequested(const CService& addr);
+    void RelayInv(CInv &inv);
+
+    void RelayTransaction(const CTransaction& tx);
 
     void SetAsmap(std::vector<bool> asmap) { addrman.m_asmap = std::move(asmap); }
+
+    CAddrMan addrman;
+    std::vector<CNode*> CopyNodeVector();
+    void ReleaseNodeVector(const std::vector<CNode*>& vecNodes);
 
 private:
     struct ListenSocket {
@@ -496,11 +515,13 @@ private:
     std::vector<ListenSocket> vhListenSocket;
     std::atomic<bool> fNetworkActive{true};
     bool fAddressesInitialized{false};
-    CAddrMan addrman;
+
     std::deque<std::string> m_addr_fetches GUARDED_BY(m_addr_fetches_mutex);
     RecursiveMutex m_addr_fetches_mutex;
     std::vector<std::string> vAddedNodes GUARDED_BY(cs_vAddedNodes);
     RecursiveMutex cs_vAddedNodes;
+    std::vector<CService> vPendingMasternodes GUARDED_BY(cs_vPendingMasternodes);
+    RecursiveMutex cs_vPendingMasternodes;
     std::vector<CNode*> vNodes GUARDED_BY(cs_vNodes);
     std::list<CNode*> vNodesDisconnected;
     mutable RecursiveMutex cs_vNodes;
@@ -547,7 +568,7 @@ private:
      * \sa CNode::nLocalServices
      */
     ServiceFlags nLocalServices;
-
+    std::unique_ptr<CSemaphore> semMasternodeOutbound;
     std::unique_ptr<CSemaphore> semOutbound;
     std::unique_ptr<CSemaphore> semAddnode;
     int nMaxConnections;
@@ -591,6 +612,7 @@ private:
     std::thread threadSocketHandler;
     std::thread threadOpenAddedConnections;
     std::thread threadOpenConnections;
+    std::thread threadOpenMasternodeConnections;
     std::thread threadMessageHandler;
 
     /** flag for deciding to connect to an extra outbound peer,
@@ -853,6 +875,10 @@ public:
     size_t nSendOffset{0}; // offset inside the first vSendMsg already sent
     uint64_t nSendBytes GUARDED_BY(cs_vSend){0};
     std::deque<std::vector<unsigned char>> vSendMsg GUARDED_BY(cs_vSend);
+
+    bool fNetworkNode{false};
+    bool fInbound{false};
+
     RecursiveMutex cs_vSend;
     RecursiveMutex cs_hSocket;
     RecursiveMutex cs_vRecv;
@@ -875,6 +901,8 @@ public:
     const CAddress addrBind;
     std::atomic<int> nVersion{0};
     RecursiveMutex cs_SubVer;
+    bool fMasternode{false};
+    bool fSystemnode{false};
     /**
      * cleanSubVer is a sanitized string of the user agent byte array we read
      * from the wire. This cleaned string can safely be logged or displayed.
@@ -904,6 +932,8 @@ public:
     const uint64_t nKeyedNetGroup;
     std::atomic_bool fPauseRecv{false};
     std::atomic_bool fPauseSend{false};
+
+    CSemaphoreGrant grantMasternodeOutbound;
 
     bool IsOutboundOrBlockRelayConn() const {
         switch (m_conn_type) {
@@ -995,6 +1025,7 @@ public:
     // List of block ids we still have announce.
     // There is no final sorting before sending, as they are always sent immediately
     // and in the order requested.
+    std::vector<CInv> vInventoryOtherToSend;
     std::vector<uint256> vInventoryBlockToSend GUARDED_BY(cs_inventory);
     Mutex cs_inventory;
 
@@ -1187,6 +1218,30 @@ public:
         LOCK(m_tx_relay->cs_tx_inventory);
         if (!m_tx_relay->filterInventoryKnown.contains(hash)) {
             m_tx_relay->setInventoryTxToSend.insert(hash);
+        }
+    }
+
+    void AddInventoryKnown(const CInv& inv)
+    {
+        if (m_tx_relay != nullptr) {
+            LOCK(m_tx_relay->cs_tx_inventory);
+            m_tx_relay->filterInventoryKnown.insert(inv.hash);
+        }
+    }
+
+    void PushInventory(const CInv& inv)
+    {
+        if (inv.type == MSG_TX && m_tx_relay != nullptr) {
+            LOCK(m_tx_relay->cs_tx_inventory);
+            if (!m_tx_relay->filterInventoryKnown.contains(inv.hash)) {
+                m_tx_relay->setInventoryTxToSend.insert(inv.hash);
+            }
+        } else if (inv.type == MSG_BLOCK) {
+            LOCK(cs_inventory);
+            vInventoryBlockToSend.push_back(inv.hash);
+        } else {
+            LogPrint(BCLog::NET, "PushOtherInventory --  inv: %s peer=%d\n", inv.ToString(), id);
+            vInventoryOtherToSend.push_back(inv);
         }
     }
 

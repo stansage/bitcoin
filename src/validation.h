@@ -185,7 +185,10 @@ CTransactionRef GetTransaction(const CBlockIndex* const block_index, const CTxMe
  * validationinterface callback.
  */
 bool ActivateBestChain(BlockValidationState& state, const CChainParams& chainparams, std::shared_ptr<const CBlock> pblock = std::shared_ptr<const CBlock>());
-CAmount GetBlockSubsidy(int nHeight, const Consensus::Params& consensusParams);
+CAmount GetSubsidy(int nHeight, const CAmount& nFees, const Consensus::Params& consensusParams);
+CAmount GetBlockValue(int nHeight, const CAmount& nFees, const Consensus::Params& consensusParams);
+CAmount GetMasternodePayment(int nHeight, CAmount blockValue, const Consensus::Params& consensusParams);
+CAmount GetSystemnodePayment(int nHeight, CAmount blockValue, const Consensus::Params& consensusParams);
 
 /** Guess verification progress (as a fraction between 0.0=genesis and 1.0=current tip). */
 double GuessVerificationProgress(const ChainTxData& data, const CBlockIndex* pindex);
@@ -1052,5 +1055,9 @@ struct CHeightTxIndexKey {
         address.SetNull();
     }
 };
+
+bool GetUTXOCoin(const COutPoint& outpoint, Coin& coin);
+int GetUTXOHeight(const COutPoint& outpoint);
+int GetUTXOConfirmations(const COutPoint& outpoint);
 
 #endif // BITCOIN_VALIDATION_H
