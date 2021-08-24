@@ -76,12 +76,12 @@ void CMasternodeSync::Reset()
     nCountFailures = 0;
     sumMasternodeList = 0;
     sumMasternodeWinner = 0;
-    sumBudgetItemProp = 0;
-    sumBudgetItemFin = 0;
+//    sumBudgetItemProp = 0;
+//    sumBudgetItemFin = 0;
     countMasternodeList = 0;
     countMasternodeWinner = 0;
-    countBudgetItemProp = 0;
-    countBudgetItemFin = 0;
+//    countBudgetItemProp = 0;
+//    countBudgetItemFin = 0;
     RequestedMasternodeAssets = MASTERNODE_SYNC_INITIAL;
     RequestedMasternodeAttempt = 0;
     nAssetSyncStarted = GetTime();
@@ -350,25 +350,25 @@ void CMasternodeSync::Process(CConnman& connman)
             }
         }
 
-        if (RequestedMasternodeAssets == MASTERNODE_SYNC_BUDGET) {
-            //we'll start rejecting votes if we accidentally get set as synced too soon
-            if (lastBudgetItem > 0 && lastBudgetItem < GetTime() - MASTERNODE_SYNC_TIMEOUT * 2 && RequestedMasternodeAttempt >= MASTERNODE_SYNC_THRESHOLD) { //hasn't received a new item in the last five seconds, so we'll move to the
-                // Hasn't received a new item in the last five seconds, so we'll move to the
-                GetNextAsset();
+//        if (RequestedMasternodeAssets == MASTERNODE_SYNC_BUDGET) {
+//            //we'll start rejecting votes if we accidentally get set as synced too soon
+//            if (lastBudgetItem > 0 && lastBudgetItem < GetTime() - MASTERNODE_SYNC_TIMEOUT * 2 && RequestedMasternodeAttempt >= MASTERNODE_SYNC_THRESHOLD) { //hasn't received a new item in the last five seconds, so we'll move to the
+//                // Hasn't received a new item in the last five seconds, so we'll move to the
+//                GetNextAsset();
 
-                //try to activate our masternode if possible
-                activeMasternode.ManageStatus(connman);
+//                //try to activate our masternode if possible
+//                activeMasternode.ManageStatus(connman);
 
-                return;
-            }
+//                return;
+//            }
 
-            // timeout
-            if (/*lastBudgetItem == 0 &&*/(RequestedMasternodeAttempt >= MASTERNODE_SYNC_THRESHOLD * 3 || GetTime() - nAssetSyncStarted > MASTERNODE_SYNC_TIMEOUT * 5)) {
-                // maybe there is no budgets at all, so just finish syncing
-                GetNextAsset();
-                activeMasternode.ManageStatus(connman);
-                return;
-            }
+//            // timeout
+//            if (/*lastBudgetItem == 0 &&*/(RequestedMasternodeAttempt >= MASTERNODE_SYNC_THRESHOLD * 3 || GetTime() - nAssetSyncStarted > MASTERNODE_SYNC_TIMEOUT * 5)) {
+//                // maybe there is no budgets at all, so just finish syncing
+//                GetNextAsset();
+//                activeMasternode.ManageStatus(connman);
+//                return;
+//            }
 
 //            if (netfulfilledman.HasFulfilledRequest(pnode->addr, "busync"))
 //                continue;
@@ -381,7 +381,7 @@ void CMasternodeSync::Process(CConnman& connman)
 //            connman.PushMessage(pnode, CNetMsgMaker(pnode->GetCommonVersion()).Make(NetMsgType::BUDGETVOTESYNC, n));
 //            RequestedMasternodeAttempt++;
 
-            return;
-        }
+//            return;
+//        }
     }
 }
