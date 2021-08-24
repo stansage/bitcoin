@@ -43,6 +43,7 @@ struct BlockAndHeaderTipInfo
 {
     int block_height;
     int64_t block_time;
+    uint256 block_hash;
     int header_height;
     int64_t header_time;
     double verification_progress;

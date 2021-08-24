@@ -79,7 +79,7 @@ void StakePage::setClientModel(ClientModel *_clientModel)
     this->clientModel = _clientModel;
 
     if (_clientModel) {
-        connect(_clientModel, &ClientModel::numBlocksChanged, this, &StakePage::numBlocksChanged);
+        //connect(_clientModel, &ClientModel::numBlocksChanged, this, &StakePage::numBlocksChanged); TODO FIX
         int height = _clientModel->node().getNumBlocks();
         ui->labelHeight->setText(QString::number(height));
         m_subsidy = _clientModel->node().getBlockSubsidy(height);

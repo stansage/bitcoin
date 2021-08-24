@@ -163,7 +163,7 @@ Firmar solo es posible con correos del tipo Legacy.</translation>
     </message>
     <message>
         <source>Change passphrase</source>
-        <translation>Cambiar frase secreta</translation>
+        <translation>Cambiar contraseña</translation>
     </message>
     <message>
         <source>Confirm wallet encryption</source>
@@ -289,7 +289,7 @@ Firmar solo es posible con correos del tipo Legacy.</translation>
     </message>
     <message>
         <source>&amp;About %1</source>
-        <translation>%Acerca de%1</translation>
+        <translation>&amp;Acerca de %1</translation>
     </message>
     <message>
         <source>Show information about %1</source>
@@ -389,7 +389,7 @@ Firmar solo es posible con correos del tipo Legacy.</translation>
     </message>
     <message>
         <source>&amp;Show / Hide</source>
-        <translation>Mo&amp;strar/ocultar</translation>
+        <translation>&amp;Mostrar / Ocultar</translation>
     </message>
     <message>
         <source>Show or hide the main Window</source>
@@ -417,7 +417,7 @@ Firmar solo es posible con correos del tipo Legacy.</translation>
     </message>
     <message>
         <source>&amp;Help</source>
-        <translation>A&amp;yuda</translation>
+        <translation>&amp;Ayuda</translation>
     </message>
     <message>
         <source>Tabs toolbar</source>
@@ -645,11 +645,11 @@ Firmar solo es posible con correos del tipo Legacy.</translation>
     </message>
     <message>
         <source>HD key generation is &lt;b&gt;enabled&lt;/b&gt;</source>
-        <translation>La generación de la clave HD está &lt;b&gt; activada &lt;/ b&gt;</translation>
+        <translation>La generación de clave HD está &lt;b&gt;habilitada&lt;/b&gt;</translation>
     </message>
     <message>
         <source>HD key generation is &lt;b&gt;disabled&lt;/b&gt;</source>
-        <translation>La generación de la clave HD está &lt;b&gt; desactivada &lt;/ b&gt;</translation>
+        <translation>La generación de clave HD está &lt;b&gt;deshabilitada&lt;/b&gt;</translation>
     </message>
     <message>
         <source>Private key &lt;b&gt;disabled&lt;/b&gt;</source>
@@ -692,7 +692,7 @@ Firmar solo es posible con correos del tipo Legacy.</translation>
     </message>
     <message>
         <source>Fee:</source>
-        <translation>Tasa:</translation>
+        <translation>Comisión:</translation>
     </message>
     <message>
         <source>Dust:</source>
@@ -712,7 +712,7 @@ Firmar solo es posible con correos del tipo Legacy.</translation>
     </message>
     <message>
         <source>Tree mode</source>
-        <translation>Modo arbol</translation>
+        <translation>Modo árbol</translation>
     </message>
     <message>
         <source>List mode</source>
@@ -760,11 +760,11 @@ Firmar solo es posible con correos del tipo Legacy.</translation>
     </message>
     <message>
         <source>Lock unspent</source>
-        <translation>Bloquear no utilizado</translation>
+        <translation>Bloquear lo no gastado</translation>
     </message>
     <message>
         <source>Unlock unspent</source>
-        <translation>Desbloquear no utilizado</translation>
+        <translation>Desbloquear lo no gastado</translation>
     </message>
     <message>
         <source>Copy quantity</source>
@@ -796,7 +796,7 @@ Firmar solo es posible con correos del tipo Legacy.</translation>
     </message>
     <message>
         <source>yes</source>
-        <translation>si</translation>
+        <translation>sí</translation>
     </message>
     <message>
         <source>no</source>
@@ -808,7 +808,7 @@ Firmar solo es posible con correos del tipo Legacy.</translation>
     </message>
     <message>
         <source>Can vary +/- %1 satoshi(s) per input.</source>
-        <translation>Puede variar +/- %1 satoshi (s) por entrada.</translation>
+        <translation>Puede variar +/- %1 satoshi(s) por entrada.</translation>
     </message>
     <message>
         <source>(no label)</source>
@@ -937,7 +937,7 @@ Firmar solo es posible con correos del tipo Legacy.</translation>
     </message>
     <message>
         <source>Could not unlock wallet.</source>
-        <translation>No se pudo desbloquear la billetera.</translation>
+        <translation>No se pudo desbloquear el monedero.</translation>
     </message>
     <message>
         <source>New key generation failed.</source>
@@ -979,7 +979,7 @@ Firmar solo es posible con correos del tipo Legacy.</translation>
     </message>
     <message>
         <source>Command-line options</source>
-        <translation>Opciones de la línea de órdenes</translation>
+        <translation>Opciones de la línea de comandos</translation>
     </message>
 </context>
 <context>
@@ -1069,7 +1069,7 @@ Firmar solo es posible con correos del tipo Legacy.</translation>
     <name>ModalOverlay</name>
     <message>
         <source>Form</source>
-        <translation>Desde</translation>
+        <translation>Formulario</translation>
     </message>
     <message>
         <source>Recent transactions may not yet be visible, and therefore your wallet's balance might be incorrect. This information will be correct once your wallet has finished synchronizing with the bitcoin network, as detailed below.</source>
@@ -1109,7 +1109,7 @@ Firmar solo es posible con correos del tipo Legacy.</translation>
     </message>
     <message>
         <source>Hide</source>
-        <translation>Esconder</translation>
+        <translation>Ocultar</translation>
     </message>
     <message>
         <source>Esc</source>
@@ -1144,14 +1144,6 @@ Firmar solo es posible con correos del tipo Legacy.</translation>
     <message>
         <source>Open wallet warning</source>
         <translation>Ver aviso sobre la billetera</translation>
-    </message>
-    <message>
-        <source>Open wallet failed</source>
-        <translation>La apertura del monedero falló</translation>
-    </message>
-    <message>
-        <source>Open wallet warning</source>
-        <translation>Advertencia sobre apertura de monedero</translation>
     </message>
     <message>
         <source>default wallet</source>
@@ -1206,7 +1198,7 @@ Firmar solo es posible con correos del tipo Legacy.</translation>
     </message>
     <message>
         <source>Minimize instead of exit the application when the window is closed. When this option is enabled, the application will be closed only after selecting Exit in the menu.</source>
-        <translation>Minimice en lugar de salir de la aplicación cuando la ventana esté cerrada. Cuando esta opción está habilitada, la aplicación se cerrará solo después de seleccionar Salir en el menú.</translation>
+        <translation>Minimizar en lugar de salir de la aplicación cuando la ventana está cerrada. Cuando se activa esta opción, la aplicación sólo se cerrará después de seleccionar Salir en el menú.</translation>
     </message>
     <message>
         <source>Third party URLs (e.g. a block explorer) that appear in the transactions tab as context menu items. %s in the URL is replaced by transaction hash. Multiple URLs are separated by vertical bar |.</source>
@@ -1406,7 +1398,7 @@ Firmar solo es posible con correos del tipo Legacy.</translation>
     </message>
     <message>
         <source>Client restart required to activate changes.</source>
-        <translation>Reinicio del cliente para activar cambios.</translation>
+        <translation>Se necesita reiniciar el cliente para activar los cambios.</translation>
     </message>
     <message>
         <source>Client will be shut down. Do you want to proceed?</source>
@@ -1670,14 +1662,6 @@ Firmar solo es posible con correos del tipo Legacy.</translation>
         <translation>Si está recibiendo este error debería solicitar al comerciante que le proporcione una URI compatible con BIP21</translation>
     </message>
     <message>
-        <source>Due to widespread security flaws in BIP70 it's strongly recommended that any merchant instructions to switch wallets be ignored.</source>
-        <translation>Debido a fallos de seguridad conocidos en BIP70 se recomienda encarecidamente que se ignore cualquier instrucción sobre el intercambio de monederos.</translation>
-    </message>
-    <message>
-        <source>If you are receiving this error you should request the merchant provide a BIP21 compatible URI.</source>
-        <translation>Si está recibiendo este error debería pedir al comerciante que le proporcione una URI compatible con BIP21</translation>
-    </message>
-    <message>
         <source>Invalid payment address %1</source>
         <translation>Dirección de pago inválida %1</translation>
     </message>
@@ -1710,7 +1694,7 @@ Firmar solo es posible con correos del tipo Legacy.</translation>
     </message>
     <message>
         <source>Sent</source>
-        <translation>Expedido</translation>
+        <translation>Enviado</translation>
     </message>
     <message>
         <source>Received</source>
@@ -1939,7 +1923,7 @@ Firmar solo es posible con correos del tipo Legacy.</translation>
     </message>
     <message>
         <source>Sent</source>
-        <translation>Expedido</translation>
+        <translation>Enviado</translation>
     </message>
     <message>
         <source>&amp;Peers</source>
@@ -2383,7 +2367,7 @@ Firmar solo es posible con correos del tipo Legacy.</translation>
     </message>
     <message>
         <source>Fee:</source>
-        <translation>Tasa:</translation>
+        <translation>Comisión:</translation>
     </message>
     <message>
         <source>After Fee:</source>
@@ -2415,7 +2399,7 @@ Firmar solo es posible con correos del tipo Legacy.</translation>
     </message>
     <message>
         <source>Warning: Fee estimation is currently not possible.</source>
-        <translation>Advertencia: En este momento no se puede estimar la cuota.</translation>
+        <translation>Advertencia: En este momento no se puede estimar la comisión.</translation>
     </message>
     <message>
         <source>Specify a custom fee per kB (1,000 bytes) of the transaction's virtual size.
@@ -2431,7 +2415,7 @@ Nota: Dado que la comisión se calcula por byte, una comisión de "100 satoshis 
     </message>
     <message>
         <source>Hide</source>
-        <translation>Esconder</translation>
+        <translation>Ocultar</translation>
     </message>
     <message>
         <source>Recommended:</source>
@@ -3255,7 +3239,7 @@ Nota: Dado que la comisión se calcula por byte, una comisión de "100 satoshis 
     </message>
     <message>
         <source>To yourself</source>
-        <translation>A ti mismo</translation>
+        <translation>A usted mismo</translation>
     </message>
     <message>
         <source>Mined</source>
@@ -3359,7 +3343,7 @@ Nota: Dado que la comisión se calcula por byte, una comisión de "100 satoshis 
     </message>
     <message>
         <source>Exporting Successful</source>
-        <translation>Exportación exitosa</translation>
+        <translation>Exportación finalizada</translation>
     </message>
     <message>
         <source>The transaction history was successfully saved to %1.</source>
@@ -3427,7 +3411,7 @@ Vaya a Archivo&gt; Abrir monedero para cargar un monedero.
     </message>
     <message>
         <source>Fee bump error</source>
-        <translation>Error de incremento de cuota</translation>
+        <translation>Error de incremento de comisión</translation>
     </message>
     <message>
         <source>Increasing transaction fee failed</source>
@@ -3435,7 +3419,7 @@ Vaya a Archivo&gt; Abrir monedero para cargar un monedero.
     </message>
     <message>
         <source>Do you want to increase the fee?</source>
-        <translation>¿Desea incrementar la cuota?</translation>
+        <translation>¿Desea incrementar la comisión?</translation>
     </message>
     <message>
         <source>Do you want to draft a transaction with fee increase?</source>
@@ -4095,7 +4079,7 @@ Vaya a Archivo&gt; Abrir monedero para cargar un monedero.
     </message>
     <message>
         <source>Done loading</source>
-        <translation>Generado pero no aceptado</translation>
+        <translation>Se terminó de cargar</translation>
     </message>
 </context>
 </TS>

@@ -16,6 +16,7 @@
 #include <QProgressBar>
 #include <QString>
 #include <QTableView>
+#include <QTableWidget>
 #include <QLabel>
 
 class QValidatedLineEdit;
@@ -213,6 +214,20 @@ namespace GUIUtil
         private Q_SLOTS:
             void on_sectionResized(int logicalIndex, int oldSize, int newSize);
             void on_geometriesChanged();
+    };
+
+    /*
+     * An extension to the QTableWidgetItem that provides the ability to compare numeric values
+     * in a table widget, reverting back to the default parent comparison when the items are not 
+     * both numeric.
+     */
+    class QTableWidgetNumberItem : public QTableWidgetItem
+    {
+        public:
+              explicit QTableWidgetNumberItem(const int64_t numValue);
+
+          private:
+              int64_t m_value;
     };
 
     bool GetStartOnSystemStartup();
