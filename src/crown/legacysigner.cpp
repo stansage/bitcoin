@@ -80,6 +80,7 @@ bool CLegacySigner::SetCollateralAddress(std::string strAddress)
 bool CLegacySigner::SetKey(std::string strSecret, CKey& key, CPubKey& pubkey)
 {
     auto m_wallet = GetMainWallet();
+    assert(m_wallet);
     EnsureLegacyScriptPubKeyMan(*m_wallet, true);
 
     key = DecodeSecret(strSecret);
