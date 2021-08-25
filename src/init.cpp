@@ -596,6 +596,7 @@ void SetupServerArgs(NodeContext& node)
     argsman.AddArg("-cleanblockindex=<n>", "Clean block index. 0 = disabled, 1 = enabled (default: enabled)", ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     argsman.AddArg("-cleanblockindextimeout=<n>", "Clean block index periodically after some time (default 600 seconds)", ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     argsman.AddArg("-masternode", "Run as masternode", false, OptionsCategory::RPC);
+    argsman.AddArg("-forcelocalmasternode", "Allow running masternode on local IP address", false, OptionsCategory::RPC);
     argsman.AddArg("-masternodeprivkey", "Masternode private key", false, OptionsCategory::RPC);
     argsman.AddArg("-masternodeaddr", strprintf(_("Set external address:port to get to this masternode (example: %s)").translated, "1.2.3.4:12345"), false, OptionsCategory::RPC);
     argsman.AddArg("-diagnode", "Enable full masternode diagnostic messaging.", ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);

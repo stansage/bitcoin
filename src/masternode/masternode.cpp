@@ -429,7 +429,7 @@ bool CMasternodeBroadcast::Create(CTxIn txin, CService service, CKey keyCollater
 
     mnb = CMasternodeBroadcast(service, txin, pubKeyCollateralAddress, pubKeyMasternodeNew, PROTOCOL_VERSION);
 
-    if (!mnb.IsValidNetAddr()) {
+    if (!mnb.IsValidNetAddr() && !gArgs.GetBoolArg("-forcelocalmasternode", false)) {
         strErrorMessage = strprintf("Invalid IP address, masternode=%s", txin.prevout.ToStringShort());
         LogPrint(BCLog::MASTERNODE, "CMasternodeBroadcast::Create -- %s\n", strErrorMessage);
         mnb = CMasternodeBroadcast();
