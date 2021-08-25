@@ -584,7 +584,7 @@ void CMasternodeMan::ProcessMessage(CNode* pfrom, const std::string& strCommand,
 
         if (vin == CTxIn()) {
             bool isLocal = (pfrom->addr.IsRFC1918() || pfrom->addr.IsLocal());
-            if (!isLocal) {
+            if (!isLocal || gArgs.GetBoolArg("-forcelocalmasternode", false)) {
                 std::map<CNetAddr, int64_t>::iterator i = mAskedUsForMasternodeList.find(pfrom->addr);
                 if (i != mAskedUsForMasternodeList.end()) {
                     int64_t t = (*i).second;
