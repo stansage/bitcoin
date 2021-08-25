@@ -210,7 +210,7 @@ void CMasternodeMan::DsegUpdate(CNode* pnode, CConnman& connman)
 {
     LOCK(cs);
 
-    if (!(pnode->addr.IsRFC1918() || pnode->addr.IsLocal())) {
+    if (!(pnode->addr.IsRFC1918() || pnode->addr.IsLocal()) || gArgs.GetBoolArg("-forcelocalmasternode", false)) {
         std::map<CNetAddr, int64_t>::iterator it = mWeAskedForMasternodeList.find(pnode->addr);
         if (it != mWeAskedForMasternodeList.end()) {
             if (GetTime() < (*it).second) {
