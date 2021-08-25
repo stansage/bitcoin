@@ -181,13 +181,6 @@ extern const char* FILTERADD;
  */
 extern const char* FILTERCLEAR;
 /**
- * The reject message informs the receiving node that one of its previous
- * messages has been rejected.
- * @since protocol version 70002 as described by BIP61.
- * @see https://bitcoin.org/en/developer-reference#reject
- */
-extern const char* REJECT;
-/**
  * Indicates that a node prefers to receive new block announcements via a
  * "headers" message rather than an "inv".
  * @since protocol version 70012 as described by BIP130.
@@ -270,14 +263,14 @@ extern const char* WTXIDRELAY;
 /**
  * crown command set
  */
-extern const char* BUDGETPROPOSAL;
-extern const char* BUDGETVOTE;
-extern const char* BUDGETVOTESYNC;
+//extern const char* BUDGETPROPOSAL;
+//extern const char* BUDGETVOTE;
+//extern const char* BUDGETVOTESYNC;
 extern const char* DSEEP;
 extern const char* DSEG;
 extern const char* DSTX;
-extern const char* FINALBUDGET;
-extern const char* FINALBUDGETVOTE;
+//extern const char* FINALBUDGET;
+//extern const char* FINALBUDGETVOTE;
 extern const char* GETMNWINNERS;
 extern const char* GETSPORKS;
 extern const char* MNBROADCAST;
@@ -287,7 +280,6 @@ extern const char* MNPING2;
 extern const char* MNSYNCSTATUS;
 extern const char* MNWINNER;
 extern const char* SPORK;
-extern const char* BLOCKPROOF;
 }; // namespace NetMsgType
 
 /* Get a vector of all valid message types (see above) */
@@ -444,16 +436,16 @@ enum GetDataMsg : uint32_t {
     MSG_FILTERED_BLOCK = 3,                           //!< Defined in BIP37
 
     // Crown messages
-    MSG_SPORK = 6,
-    MSG_MASTERNODE_WINNER = 7,
-    MSG_MASTERNODE_SCANNING_ERROR = 8,
+    MSG_SPORK = 4,
+    MSG_MASTERNODE_WINNER = 5,
+    MSG_MASTERNODE_SCANNING_ERROR = 6,
 //    MSG_BUDGET_VOTE = 9,
 //    MSG_BUDGET_PROPOSAL = 10,
 //    MSG_BUDGET_FINALIZED = 11,
 //    MSG_BUDGET_FINALIZED_VOTE = 12,
-    MSG_MASTERNODE_QUORUM = 13,
-    MSG_MASTERNODE_ANNOUNCE = 14,
-    MSG_MASTERNODE_PING = 15,
+    MSG_MASTERNODE_QUORUM = 7,
+    MSG_MASTERNODE_ANNOUNCE = 8,
+    MSG_MASTERNODE_PING = 9,
 
     MSG_DSTX = 19,
     MSG_CMPCT_BLOCK = 20, //!< Defined in BIP152 (moved from 4)
@@ -499,7 +491,16 @@ public:
     }
     bool IsMnMsg() const
     {
-        return !IsGenTxMsg() && !IsGenBlkMsg();
+        return type == MSG_SPORK ||
+               type == MSG_MASTERNODE_WINNER ||
+               type == MSG_MASTERNODE_SCANNING_ERROR ||
+//               type == MSG_BUDGET_VOTE ||
+//               type == MSG_BUDGET_PROPOSAL ||
+//               type == MSG_BUDGET_FINALIZED ||
+//               type == MSG_BUDGET_FINALIZED_VOTE ||
+               type == MSG_MASTERNODE_QUORUM ||
+               type == MSG_MASTERNODE_ANNOUNCE ||
+               type ==  MSG_MASTERNODE_PING;
     }
 
     uint32_t type;

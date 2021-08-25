@@ -91,7 +91,6 @@ static constexpr int32_t MAX_PEER_TX_ANNOUNCEMENTS = 5000;
 static constexpr auto TXID_RELAY_DELAY = std::chrono::seconds{2};
 /** How long to delay requesting transactions from non-preferred peers */
 static constexpr auto NONPREF_PEER_TX_DELAY = std::chrono::seconds{2};
-static constexpr std::chrono::microseconds MAX_GETDATA_RANDOM_DELAY{std::chrono::seconds{2}};
 /** How long to wait (in microseconds) before downloading a transaction from an additional peer */
 static constexpr std::chrono::microseconds GETDATA_TX_INTERVAL{std::chrono::seconds{60}};
 /** How long to delay requesting transactions from overloaded peers (see MAX_PEER_TX_REQUEST_IN_FLIGHT). */
@@ -1836,6 +1835,7 @@ void static ProcessGetData(CNode& pfrom, Peer& peer, const CChainParams& chainpa
             continue;
         }
 
+        bool push = false;
         CTransactionRef tx = FindTxForGetData(mempool, pfrom, ToGenTxid(inv), mempool_req, now);
         if (tx) {
             // WTX and WITNESS_TX imply we serialize with witness
@@ -1864,7 +1864,10 @@ void static ProcessGetData(CNode& pfrom, Peer& peer, const CChainParams& chainpa
                     State(pfrom.GetId())->m_recently_announced_invs.insert(parent_txid);
                 }
             }
-        } else {
+            push = true;
+        }
+        ProcessGetDataMasternodeTypes(&pfrom, chainparams, &connman, mempool, inv, push);
+        if (!push) {
             vNotFound.push_back(inv);
         }
     }
@@ -2451,6 +2454,8 @@ void PeerManager::ProcessMessage(CNode& pfrom, const std::string& msg_type, CDat
     PeerRef peer = GetPeerRef(pfrom.GetId());
     if (peer == nullptr) return;
 
+    ProcessMessageMasternodeTypes(&pfrom, msg_type, vRecv, m_chainparams, m_mempool, &m_connman, m_banman, interruptMsgProc);
+
     if (msg_type == NetMsgType::VERSION) {
         // Each connection can only send one version message
         if (pfrom.nVersion != 0)
@@ -2849,7 +2854,8 @@ void PeerManager::ProcessMessage(CNode& pfrom, const std::string& msg_type, CDat
             } else {
                 if (inv.IsMsgWtx()) continue;
             }
-
+    
+            const auto willStillBeIBD = ::ChainstateActive().IsInitialBlockDownload();
             if (inv.IsMsgBlk()) {
                 const bool fAlreadyHave = AlreadyHaveBlock(inv.hash);
                 LogPrint(BCLog::NET, "got inv: %s  %s peer=%d\n", inv.ToString(), fAlreadyHave ? "have" : "new", pfrom.GetId());
@@ -2873,8 +2879,14 @@ void PeerManager::ProcessMessage(CNode& pfrom, const std::string& msg_type, CDat
                     LogPrint(BCLog::NET, "transaction (%s) inv sent in violation of protocol, disconnecting peer=%d\n", inv.hash.ToString(), pfrom.GetId());
                     pfrom.fDisconnect = true;
                     return;
-                } else if (!fAlreadyHave && !m_chainman.ActiveChainstate().IsInitialBlockDownload()) {
+                } else if (!fAlreadyHave && !willStillBeIBD) {
                     AddTxAnnouncement(pfrom, gtxid, current_time);
+                }
+            } else if (inv.IsMnMsg()) { // Try the masternode types
+                const bool fAlreadyHave = AlreadyHaveMasternodeTypes(inv, m_mempool);
+                pfrom.AddKnownTx(inv.hash);
+                if (!fAlreadyHave && !fImporting && !fReindex && !willStillBeIBD) {
+                    AddTxAnnouncement(pfrom, { false, inv.hash }, current_time);
                 }
             } else {
                 LogPrint(BCLog::NET, "Unknown inv type \"%s\" received from peer=%d\n", inv.ToString(), pfrom.GetId());

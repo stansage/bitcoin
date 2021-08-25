@@ -48,14 +48,14 @@ const char *CFCHECKPT="cfcheckpt";
 const char *WTXIDRELAY="wtxidrelay";
 
 //! crown types
-const char *BUDGETPROPOSAL = "mprop";
-const char *BUDGETVOTE = "mvote";
-const char *BUDGETVOTESYNC = "mnvs";
+//const char *BUDGETPROPOSAL = "mprop";
+//const char *BUDGETVOTE = "mvote";
+//const char *BUDGETVOTESYNC = "mnvs";
 const char *DSEEP = "dseep";
 const char *DSEG = "dseg";
 const char *DSTX = "dstx";
-const char *FINALBUDGET = "fbs";
-const char *FINALBUDGETVOTE = "fbvote";
+//const char *FINALBUDGET = "fbs";
+//const char *FINALBUDGETVOTE = "fbvote";
 const char *GETMNWINNERS = "mnget";
 const char *GETSPORKS = "getsporks";
 const char *MNBROADCAST = "mnb";
@@ -65,7 +65,6 @@ const char *MNPING2 = "mnp_new";
 const char *MNSYNCSTATUS = "ssc";
 const char *MNWINNER = "mnw";
 const char *SPORK = "spork";
-const char *BLOCKPROOF = "blockproof";
 
 } // namespace NetMsgType
 
@@ -129,14 +128,14 @@ const static std::string allNetMessageTypes[] = {
     NetMsgType::CFCHECKPT,
     NetMsgType::WTXIDRELAY,
     //! crown types
-    NetMsgType::BUDGETPROPOSAL,
-    NetMsgType::BUDGETVOTE,
-    NetMsgType::BUDGETVOTESYNC,
+//    NetMsgType::BUDGETPROPOSAL,
+//    NetMsgType::BUDGETVOTE,
+//    NetMsgType::BUDGETVOTESYNC,
     NetMsgType::DSEEP,
     NetMsgType::DSEG,
     NetMsgType::DSTX,
-    NetMsgType::FINALBUDGET,
-    NetMsgType::FINALBUDGETVOTE,
+//    NetMsgType::FINALBUDGET,
+//    NetMsgType::FINALBUDGETVOTE,
     NetMsgType::GETMNWINNERS,
     NetMsgType::GETSPORKS,
     NetMsgType::MNBROADCAST,
@@ -145,8 +144,7 @@ const static std::string allNetMessageTypes[] = {
     NetMsgType::MNPING2,
     NetMsgType::MNSYNCSTATUS,
     NetMsgType::MNWINNER,
-    NetMsgType::SPORK,
-    NetMsgType::BLOCKPROOF
+    NetMsgType::SPORK
 };
 const static std::vector<std::string> allNetMessageTypesVec(allNetMessageTypes, allNetMessageTypes+ARRAYLEN(allNetMessageTypes));
 

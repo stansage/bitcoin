@@ -37,11 +37,7 @@ bool AlreadyHaveMasternodeTypes(const CInv& inv, const CTxMemPool& mempool)
             if(mapMasternodePayeeVotes.count(inv.hash)) {
                 masternodeSync.AddedMasternodeWinner(inv.hash);
                 return true;
-	    }
-//            if(masternodePayments.mapMasternodePayeeVotes.count(inv.hash)) {
-//                masternodeSync.AddedMasternodeWinner(inv.hash);
-//                return true;
-//            }
+            }
             return false;
 //        case MSG_BUDGET_VOTE:
 //            if(budget.HasItem(inv.hash)) {
