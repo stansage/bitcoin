@@ -720,7 +720,7 @@ static RPCHelpMan mnsync()
 
     if(strMode == "next")
     {
-        ++masternodeSync.RequestedMasternodeAssets;
+        masternodeSync.GetNextAsset();
         return "success";
     }
 
