@@ -57,14 +57,14 @@ const char *DSTX = "dstx";
 //const char *FINALBUDGET = "fbs";
 //const char *FINALBUDGETVOTE = "fbvote";
 const char *GETMNWINNERS = "mnget";
-const char *GETSPORKS = "getsporks";
+//const char *GETSPORKS = "getsporks";
 const char *MNBROADCAST = "mnb";
 const char *MNBROADCAST2 = "mnb_new";
 const char *MNPING = "mnp";
 const char *MNPING2 = "mnp_new";
 const char *MNSYNCSTATUS = "ssc";
 const char *MNWINNER = "mnw";
-const char *SPORK = "spork";
+//const char *SPORK = "spork";
 
 } // namespace NetMsgType
 
@@ -73,15 +73,13 @@ static const char* ppszTypeName[] = {
         "tx",
         "block",
         "filtered block",
-        "tx lock request",
-        "tx lock vote",
-        "spork",
+//        "spork",
         "mn winner",
         "mn scan error",
-        "mn budget vote",
-        "mn budget proposal",
-        "mn budget finalized",
-        "mn budget finalized vote",
+//        "mn budget vote",
+//        "mn budget proposal",
+//        "mn budget finalized",
+//        "mn budget finalized vote",
         "mn quorum",
         "mn announce",
         "mn ping",
@@ -137,14 +135,14 @@ const static std::string allNetMessageTypes[] = {
 //    NetMsgType::FINALBUDGET,
 //    NetMsgType::FINALBUDGETVOTE,
     NetMsgType::GETMNWINNERS,
-    NetMsgType::GETSPORKS,
+//    NetMsgType::GETSPORKS,
     NetMsgType::MNBROADCAST,
     NetMsgType::MNBROADCAST2,
     NetMsgType::MNPING,
     NetMsgType::MNPING2,
     NetMsgType::MNSYNCSTATUS,
     NetMsgType::MNWINNER,
-    NetMsgType::SPORK
+//    NetMsgType::SPORK
 };
 const static std::vector<std::string> allNetMessageTypesVec(allNetMessageTypes, allNetMessageTypes+ARRAYLEN(allNetMessageTypes));
 

@@ -13,8 +13,9 @@
 
 #include <crown/spork.h>
 #include <masternode/masternodeman.h>
-//#include <masternode/masternode-budget.h>
+#include <masternode/masternode-budget.h>
 #include <masternode/masternode-payments.h>
+#include <masternode/masternode-sync.h>
 
 #include <memory>
 #include <typeinfo>
@@ -31,8 +32,8 @@ bool AlreadyHaveMasternodeTypes(const CInv& inv, const CTxMemPool& mempool)
 {
     switch (inv.type)
     {
-        case MSG_SPORK:
-            return mapSporks.count(inv.hash);
+//        case MSG_SPORK:
+//            return mapSporks.count(inv.hash);
         case MSG_MASTERNODE_WINNER:
             if(mapMasternodePayeeVotes.count(inv.hash)) {
                 masternodeSync.AddedMasternodeWinner(inv.hash);
@@ -80,13 +81,13 @@ void ProcessGetDataMasternodeTypes(CNode* pfrom, const CChainParams& chainparams
 {
     const CNetMsgMaker msgMaker(PROTOCOL_VERSION);
     {
-        //! common spork
-        if (!pushed && inv.type == MSG_SPORK) {
-            if(mapSporks.count(inv.hash)) {
-                connman->PushMessage(pfrom, msgMaker.Make(NetMsgType::SPORK, mapSporks[inv.hash]));
-                pushed = true;
-            }
-        }
+//        //! common spork
+//        if (!pushed && inv.type == MSG_SPORK) {
+//            if(mapSporks.count(inv.hash)) {
+//                connman->PushMessage(pfrom, msgMaker.Make(NetMsgType::SPORK, mapSporks[inv.hash]));
+//                pushed = true;
+//            }
+//        }
 
         //! masternode types
         if (!pushed && inv.type == MSG_MASTERNODE_WINNER) {
@@ -171,8 +172,8 @@ bool ProcessMessageMasternodeTypes(CNode* pfrom, const std::string& msg_type, CD
 //    budget.ProcessMessage(pfrom, msg_type, vRecv, connman, target); RETURN_ON_CONDITION(target);
     masternodeSync.ProcessMessage(pfrom, msg_type, vRecv, connman, target); RETURN_ON_CONDITION(target);
 
-    //! not very performance critical
-    ProcessSpork(pfrom, connman, msg_type, vRecv);
+//    //! not very performance critical
+//    ProcessSpork(pfrom, connman, msg_type, vRecv);
 
     return true;
 }

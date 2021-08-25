@@ -16,6 +16,7 @@ using namespace std;
 
 extern RecursiveMutex cs_mapMasternodePayeeVotes;
 
+class CNode;
 class CMasternodePaymentWinner;
 extern std::map<uint256, CMasternodePaymentWinner> mapMasternodePayeeVotes;
 

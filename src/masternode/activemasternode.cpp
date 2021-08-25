@@ -6,6 +6,7 @@
 #include <crown/nodewallet.h>
 #include <crown/spork.h>
 #include <netbase.h>
+#include <crown/legacysigner.h>
 
 class CActiveMasternode;
 CActiveMasternode activeMasternode;

@@ -9,9 +9,9 @@
 #include <net.h>
 
 #define MASTERNODE_SYNC_INITIAL 0
-#define MASTERNODE_SYNC_SPORKS 1
-#define MASTERNODE_SYNC_LIST 2
-#define MASTERNODE_SYNC_MNW 3
+//#define MASTERNODE_SYNC_SPORKS 1
+#define MASTERNODE_SYNC_LIST 1
+#define MASTERNODE_SYNC_MNW 2
 //#define MASTERNODE_SYNC_BUDGET 4
 //#define MASTERNODE_SYNC_BUDGET_PROP 10
 //#define MASTERNODE_SYNC_BUDGET_FIN 11
@@ -73,7 +73,7 @@ public:
     void Process(CConnman& connman);
     bool IsSynced();
     bool IsBlockchainSynced();
-    bool AreSporksSynced() const;
+//    bool AreSporksSynced() const;
     void ClearFulfilledRequest(CConnman& connman);
 };
 

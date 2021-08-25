@@ -272,14 +272,14 @@ extern const char* DSTX;
 //extern const char* FINALBUDGET;
 //extern const char* FINALBUDGETVOTE;
 extern const char* GETMNWINNERS;
-extern const char* GETSPORKS;
+//extern const char* GETSPORKS;
 extern const char* MNBROADCAST;
 extern const char* MNBROADCAST2;
 extern const char* MNPING;
 extern const char* MNPING2;
 extern const char* MNSYNCSTATUS;
 extern const char* MNWINNER;
-extern const char* SPORK;
+//extern const char* SPORK;
 }; // namespace NetMsgType
 
 /* Get a vector of all valid message types (see above) */
@@ -436,16 +436,16 @@ enum GetDataMsg : uint32_t {
     MSG_FILTERED_BLOCK = 3,                           //!< Defined in BIP37
 
     // Crown messages
-    MSG_SPORK = 4,
-    MSG_MASTERNODE_WINNER = 5,
-    MSG_MASTERNODE_SCANNING_ERROR = 6,
+//    MSG_SPORK = 4,
+    MSG_MASTERNODE_WINNER = 4,
+    MSG_MASTERNODE_SCANNING_ERROR = 5,
 //    MSG_BUDGET_VOTE = 9,
 //    MSG_BUDGET_PROPOSAL = 10,
 //    MSG_BUDGET_FINALIZED = 11,
 //    MSG_BUDGET_FINALIZED_VOTE = 12,
-    MSG_MASTERNODE_QUORUM = 7,
-    MSG_MASTERNODE_ANNOUNCE = 8,
-    MSG_MASTERNODE_PING = 9,
+    MSG_MASTERNODE_QUORUM = 6,
+    MSG_MASTERNODE_ANNOUNCE = 7,
+    MSG_MASTERNODE_PING = 8,
 
     MSG_DSTX = 19,
     MSG_CMPCT_BLOCK = 20, //!< Defined in BIP152 (moved from 4)
@@ -491,7 +491,8 @@ public:
     }
     bool IsMnMsg() const
     {
-        return type == MSG_SPORK ||
+        return
+//               type == MSG_SPORK ||
                type == MSG_MASTERNODE_WINNER ||
                type == MSG_MASTERNODE_SCANNING_ERROR ||
 //               type == MSG_BUDGET_VOTE ||

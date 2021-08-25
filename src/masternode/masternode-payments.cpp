@@ -10,6 +10,10 @@
 #include <netfulfilledman.h>
 #include <netmessagemaker.h>
 #include <util/moneystr.h>
+#include <masternode/masternode.h>
+#include <masternode/masternodeman.h>
+#include <masternode/masternode-sync.h>
+#include <crown/legacysigner.h>
 
 std::map<uint256, CMasternodePaymentWinner> mapMasternodePayeeVotes;
 

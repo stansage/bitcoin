@@ -3,6 +3,8 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <crown/init.h>
+#include <crown/legacysigner.h>
+#include <boost/lexical_cast.hpp>
 
 void loadNodeConfiguration()
 {
