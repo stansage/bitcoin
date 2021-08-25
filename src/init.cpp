@@ -597,6 +597,7 @@ void SetupServerArgs(NodeContext& node)
     argsman.AddArg("-headerspamfilterignoreport=<n>", strprintf("Ignore the port in the ip address when looking for header spam, determine whether or not multiple nodes can be on the same IP (default: %u)", DEFAULT_HEADER_SPAM_FILTER_IGNORE_PORT), ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     argsman.AddArg("-cleanblockindex=<n>", "Clean block index. 0 = disabled, 1 = enabled (default: enabled)", ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     argsman.AddArg("-cleanblockindextimeout=<n>", "Clean block index periodically after some time (default 600 seconds)", ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
+    argsman.AddArg("-mnconflock", "Lock masternodes from masternode configuration file", false, OptionsCategory::RPC);
     argsman.AddArg("-masternode", "Run as masternode", false, OptionsCategory::RPC);
     argsman.AddArg("-forcelocalmasternode", "Allow running masternode on local IP address", false, OptionsCategory::RPC);
     argsman.AddArg("-masternodeprivkey", "Masternode private key", false, OptionsCategory::RPC);
