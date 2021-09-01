@@ -4174,7 +4174,7 @@ bool CChainState::UpdateHashProof(const CBlock& block, BlockValidationState& sta
         return state.Invalid(BlockValidationResult::BLOCK_INVALID_HEADER, "bad-proof-of-stake-timestamp", strprintf("UpdateHashProof() : coinstake timestamp violation nTimeBlock=%d", block.GetBlockTime()));
 
     // Check proof-of-work or proof-of-stake
-    if (block.nBits != GetNextWorkRequired(pindex->pprev, &block, consensusParams, block.IsProofOfStake()))
+    if (pindex->pprev != nullptr && block.nBits != GetNextWorkRequired(pindex->pprev, &block, consensusParams, block.IsProofOfStake()))
         return state.Invalid(BlockValidationResult::BLOCK_INVALID_HEADER, "bad-proof-of-work-or-stake", strprintf("UpdateHashProof() : incorrect %s", block.IsProofOfWork() ? "proof-of-work" : "proof-of-stake"));
 
     uint256 hashProof;
