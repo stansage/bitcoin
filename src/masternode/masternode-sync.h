@@ -11,7 +11,7 @@
 #define MASTERNODE_SYNC_INITIAL 0
 //#define MASTERNODE_SYNC_SPORKS 1
 #define MASTERNODE_SYNC_LIST 1
-#define MASTERNODE_SYNC_MNW 2
+//#define MASTERNODE_SYNC_MNW 2
 //#define MASTERNODE_SYNC_BUDGET 4
 //#define MASTERNODE_SYNC_BUDGET_PROP 10
 //#define MASTERNODE_SYNC_BUDGET_FIN 11
@@ -31,23 +31,23 @@ extern CMasternodeSync masternodeSync;
 class CMasternodeSync {
 public:
     std::map<uint256, int> mapSeenSyncMNB;
-    std::map<uint256, int> mapSeenSyncMNW;
-    std::map<uint256, int> mapSeenSyncBudget;
+//    std::map<uint256, int> mapSeenSyncMNW;
+//    std::map<uint256, int> mapSeenSyncBudget;
 
     int64_t lastMasternodeList;
-    int64_t lastMasternodeWinner;
+//    int64_t lastMasternodeWinner;
 //    int64_t lastBudgetItem;
     int64_t lastFailure;
     int nCountFailures;
 
     // sum of all counts
     int sumMasternodeList;
-    int sumMasternodeWinner;
+//    int sumMasternodeWinner;
 //    int sumBudgetItemProp;
 //    int sumBudgetItemFin;
     // peers that reported counts
     int countMasternodeList;
-    int countMasternodeWinner;
+//    int countMasternodeWinner;
 //    int countBudgetItemProp;
 //    int countBudgetItemFin;
 

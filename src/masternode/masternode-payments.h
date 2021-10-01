@@ -16,75 +16,75 @@ using namespace std;
 
 extern RecursiveMutex cs_mapMasternodePayeeVotes;
 
-class CNode;
-class CMasternodePaymentWinner;
-extern std::map<uint256, CMasternodePaymentWinner> mapMasternodePayeeVotes;
+//class CNode;
+//class CMasternodePaymentWinner;
+//extern std::map<uint256, CMasternodePaymentWinner> mapMasternodePayeeVotes;
 
 bool IsReferenceNode(CTxIn& vin);
 
 // for storing the winning payments
-class CMasternodePaymentWinner {
-public:
-    CTxIn vinMasternode;
+//class CMasternodePaymentWinner {
+//public:
+//    CTxIn vinMasternode;
 
-    int nBlockHeight;
-    CScript payee;
-    std::vector<unsigned char> vchSig;
+//    int nBlockHeight;
+//    CScript payee;
+//    std::vector<unsigned char> vchSig;
 
-    CMasternodePaymentWinner()
-    {
-        nBlockHeight = 0;
-        vinMasternode = CTxIn();
-        payee = CScript();
-    }
+//    CMasternodePaymentWinner()
+//    {
+//        nBlockHeight = 0;
+//        vinMasternode = CTxIn();
+//        payee = CScript();
+//    }
 
-    CMasternodePaymentWinner(CTxIn vinIn)
-    {
-        nBlockHeight = 0;
-        vinMasternode = vinIn;
-        payee = CScript();
-    }
+//    CMasternodePaymentWinner(CTxIn vinIn)
+//    {
+//        nBlockHeight = 0;
+//        vinMasternode = vinIn;
+//        payee = CScript();
+//    }
 
-    uint256 GetHash()
-    {
-        CHashWriter ss(SER_GETHASH, PROTOCOL_VERSION);
-        ss << *(CScriptBase*)(&payee);
-        ss << nBlockHeight;
-        ss << vinMasternode.prevout;
+//    uint256 GetHash()
+//    {
+//        CHashWriter ss(SER_GETHASH, PROTOCOL_VERSION);
+//        ss << *(CScriptBase*)(&payee);
+//        ss << nBlockHeight;
+//        ss << vinMasternode.prevout;
 
-        return ss.GetHash();
-    }
+//        return ss.GetHash();
+//    }
 
-    bool Sign(CKey& keyMasternode, CPubKey& pubKeyMasternode);
-    bool IsValid(CNode* pnode, std::string& strError, CConnman& connman);
-    bool SignatureValid();
-    void Relay(CConnman& connman);
+//    bool Sign(CKey& keyMasternode, CPubKey& pubKeyMasternode);
+//    bool IsValid(CNode* pnode, std::string& strError, CConnman& connman);
+//    bool SignatureValid();
+//    void Relay(CConnman& connman);
 
-    void AddPayee(CScript payeeIn)
-    {
-        payee = payeeIn;
-    }
+//    void AddPayee(CScript payeeIn)
+//    {
+//        payee = payeeIn;
+//    }
 
-    SERIALIZE_METHODS(CMasternodePaymentWinner, obj)
-    {
-        READWRITE(obj.vinMasternode);
-        READWRITE(obj.nBlockHeight);
-        READWRITE(*(CScriptBase*)(&obj.payee));
-        READWRITE(obj.vchSig);
-    }
+//    SERIALIZE_METHODS(CMasternodePaymentWinner, obj)
+//    {
+//        READWRITE(obj.vinMasternode);
+//        READWRITE(obj.nBlockHeight);
+//        READWRITE(*(CScriptBase*)(&obj.payee));
+//        READWRITE(obj.vchSig);
+//    }
 
-    std::string ToString()
-    {
-        std::string ret = "";
-        ret += vinMasternode.ToString();
-        ret += ", " + boost::lexical_cast<std::string>(nBlockHeight);
-        ret += ", " + payee.ToString();
-        ret += ", " + boost::lexical_cast<std::string>((int)vchSig.size());
-        return ret;
-    }
-};
+//    std::string ToString()
+//    {
+//        std::string ret = "";
+//        ret += vinMasternode.ToString();
+//        ret += ", " + boost::lexical_cast<std::string>(nBlockHeight);
+//        ret += ", " + payee.ToString();
+//        ret += ", " + boost::lexical_cast<std::string>((int)vchSig.size());
+//        return ret;
+//    }
+//};
 
-    bool AddWinningMasternode(CMasternodePaymentWinner& winner);
-    std::string GetRequiredPaymentsString(int nBlockHeight);
+//    bool AddWinningMasternode(CMasternodePaymentWinner& winner);
+//    std::string GetRequiredPaymentsString(int nBlockHeight);
 
 #endif

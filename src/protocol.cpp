@@ -59,11 +59,9 @@ const char *DSTX = "dstx";
 const char *GETMNWINNERS = "mnget";
 //const char *GETSPORKS = "getsporks";
 const char *MNBROADCAST = "mnb";
-const char *MNBROADCAST2 = "mnb_new";
 const char *MNPING = "mnp";
-const char *MNPING2 = "mnp_new";
 const char *MNSYNCSTATUS = "ssc";
-const char *MNWINNER = "mnw";
+//const char *MNWINNER = "mnw";
 //const char *SPORK = "spork";
 
 } // namespace NetMsgType
@@ -137,11 +135,9 @@ const static std::string allNetMessageTypes[] = {
     NetMsgType::GETMNWINNERS,
 //    NetMsgType::GETSPORKS,
     NetMsgType::MNBROADCAST,
-    NetMsgType::MNBROADCAST2,
     NetMsgType::MNPING,
-    NetMsgType::MNPING2,
     NetMsgType::MNSYNCSTATUS,
-    NetMsgType::MNWINNER,
+//    NetMsgType::MNWINNER,
 //    NetMsgType::SPORK
 };
 const static std::vector<std::string> allNetMessageTypesVec(allNetMessageTypes, allNetMessageTypes+ARRAYLEN(allNetMessageTypes));

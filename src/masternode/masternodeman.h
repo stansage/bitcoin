@@ -15,7 +15,7 @@
 #include <validation.h>
 
 #define MASTERNODES_DUMP_SECONDS (15 * 60)
-#define MASTERNODES_DSEG_SECONDS (3 * 60 * 60)
+#define MASTERNODES_DSEG_SECONDS (3 * 60 * 10)
 
 using namespace std;
 
@@ -130,6 +130,8 @@ public:
     void UpdateMasternodeList(CMasternodeBroadcast mnb, CConnman& connman);
     /// Perform complete check and only then update list and maps
     bool CheckMnbAndUpdateMasternodeList(CMasternodeBroadcast mnb, int& nDos, CConnman& connman);
+
+    int DsegUpdateInterval();
 };
 
 #endif

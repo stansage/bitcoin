@@ -109,7 +109,7 @@ public:
 
         //! Misc/masternode parameters
 //        consensus.strSporkKey = "0440409BDACDCE03BFB6D5F16E2D414953038996B49BEE6697CFA400A0001D0837C885C5B57DAD10E5CAAAE36EE975005CC6CBD7001A2A8DE76FF12185904A9BB1";
-        consensus.nMasternodeCollateral = 10000 * COIN;
+        consensus.nMasternodeCollateral = 1000 * COIN;
         consensus.strLegacySignerDummyAddress = "18WTcWvwrNnfqeQAn6th9QQ2EpnXMq5Th8";
 
         /**
@@ -157,7 +157,7 @@ public:
 
         checkpointData = {
             {
-                { 5, 	 uint256S("0x00000be6b944229504e0883b59833751d7628df77b53da5ca9aacad295af0671")},
+                { 5, 	 uint256S("00000cc836d9e5c8301f223a9c1acc906d12e2cc50e9351d02a8a072a3e255b3")},
             }
         };
 
@@ -257,7 +257,7 @@ public:
 
         bech32_hrp = "bt";
 
-        nFulfilledRequestExpireTime = 60*60;
+        nFulfilledRequestExpireTime = 22*60;
 
         vFixedSeeds = std::vector<SeedSpec6>(pnSeed6_test, pnSeed6_test + ARRAYLEN(pnSeed6_test));
 

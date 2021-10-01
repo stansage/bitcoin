@@ -34,12 +34,12 @@ bool AlreadyHaveMasternodeTypes(const CInv& inv, const CTxMemPool& mempool)
     {
 //        case MSG_SPORK:
 //            return mapSporks.count(inv.hash);
-        case MSG_MASTERNODE_WINNER:
-            if(mapMasternodePayeeVotes.count(inv.hash)) {
-                masternodeSync.AddedMasternodeWinner(inv.hash);
-                return true;
-            }
-            return false;
+//        case MSG_MASTERNODE_WINNER:
+//            if(mapMasternodePayeeVotes.count(inv.hash)) {
+//                masternodeSync.AddedMasternodeWinner(inv.hash);
+//                return true;
+//            }
+//            return false;
 //        case MSG_BUDGET_VOTE:
 //            if(budget.HasItem(inv.hash)) {
 //                masternodeSync.AddedBudgetItem(inv.hash);
@@ -90,29 +90,21 @@ void ProcessGetDataMasternodeTypes(CNode* pfrom, const CChainParams& chainparams
 //        }
 
         //! masternode types
-        if (!pushed && inv.type == MSG_MASTERNODE_WINNER) {
-            if (mapMasternodePayeeVotes.count(inv.hash)) {
-                connman->PushMessage(pfrom, msgMaker.Make(NetMsgType::MNWINNER, mapMasternodePayeeVotes[inv.hash]));
-                pushed = true;
-            }
-        }
+//        if (!pushed && inv.type == MSG_MASTERNODE_WINNER) {
+//            if (mapMasternodePayeeVotes.count(inv.hash)) {
+//                connman->PushMessage(pfrom, msgMaker.Make(NetMsgType::MNWINNER, mapMasternodePayeeVotes[inv.hash]));
+//                pushed = true;
+//            }
+//        }
         if (!pushed && inv.type == MSG_MASTERNODE_ANNOUNCE) {
             if(mnodeman.mapSeenMasternodeBroadcast.count(inv.hash)) {
-                if (pfrom->nVersion < MIN_MNW_PING_VERSION) {
-                    connman->PushMessage(pfrom, msgMaker.Make(NetMsgType::MNBROADCAST, mnodeman.mapSeenMasternodeBroadcast[inv.hash]));
-                } else {
-                    connman->PushMessage(pfrom, msgMaker.Make(NetMsgType::MNBROADCAST2, mnodeman.mapSeenMasternodeBroadcast[inv.hash]));
-                }
+                connman->PushMessage(pfrom, msgMaker.Make(NetMsgType::MNBROADCAST, mnodeman.mapSeenMasternodeBroadcast[inv.hash]));
                 pushed = true;
             }
         }
         if (!pushed && inv.type == MSG_MASTERNODE_PING) {
             if(mnodeman.mapSeenMasternodePing.count(inv.hash)){
-                if (pfrom->nVersion < MIN_MNW_PING_VERSION) {
-                    connman->PushMessage(pfrom, msgMaker.Make(NetMsgType::MNPING, mnodeman.mapSeenMasternodePing[inv.hash]));
-                } else {
-                    connman->PushMessage(pfrom, msgMaker.Make(NetMsgType::MNPING2, mnodeman.mapSeenMasternodePing[inv.hash]));
-                }
+                connman->PushMessage(pfrom, msgMaker.Make(NetMsgType::MNPING, mnodeman.mapSeenMasternodePing[inv.hash]));
                 pushed = true;
             }
         }

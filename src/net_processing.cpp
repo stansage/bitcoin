@@ -1822,7 +1822,7 @@ void static ProcessGetData(CNode& pfrom, Peer& peer, const CChainParams& chainpa
     // Process as many TX items from the front of the getdata queue as
     // possible, since they're common and it's efficient to batch process
     // them.
-    while (it != peer.m_getdata_requests.end() && it->IsGenTxMsg()) {
+    while (it != peer.m_getdata_requests.end() && (it->IsGenTxMsg() || it->IsMnMsg())) {
         if (interruptMsgProc) return;
         // The send buffer provides backpressure. If there's no space in
         // the buffer, pause processing until the next call.
@@ -4632,6 +4632,15 @@ bool PeerManager::SendMessages(CNode* pto)
                             pto->m_tx_relay->filterInventoryKnown.insert(txid);
                         }
                     }
+                    // Send masternode inventory items
+                    for (const auto& inv : pto->vInventoryOtherToSend) {
+                        vInv.emplace_back(inv);
+                        if (vInv.size() == MAX_INV_SZ) {
+                            m_connman.PushMessage(pto, msgMaker.Make(NetMsgType::INV, vInv));
+                            vInv.clear();
+                        }
+                    }
+                    pto->vInventoryOtherToSend.clear();
                 }
             }
         }

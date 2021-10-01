@@ -274,11 +274,9 @@ extern const char* DSTX;
 extern const char* GETMNWINNERS;
 //extern const char* GETSPORKS;
 extern const char* MNBROADCAST;
-extern const char* MNBROADCAST2;
 extern const char* MNPING;
-extern const char* MNPING2;
 extern const char* MNSYNCSTATUS;
-extern const char* MNWINNER;
+//extern const char* MNWINNER;
 //extern const char* SPORK;
 }; // namespace NetMsgType
 
@@ -437,7 +435,7 @@ enum GetDataMsg : uint32_t {
 
     // Crown messages
 //    MSG_SPORK = 4,
-    MSG_MASTERNODE_WINNER = 4,
+//    MSG_MASTERNODE_WINNER = 4,
     MSG_MASTERNODE_SCANNING_ERROR = 5,
 //    MSG_BUDGET_VOTE = 9,
 //    MSG_BUDGET_PROPOSAL = 10,
@@ -493,7 +491,7 @@ public:
     {
         return
 //               type == MSG_SPORK ||
-               type == MSG_MASTERNODE_WINNER ||
+//               type == MSG_MASTERNODE_WINNER ||
                type == MSG_MASTERNODE_SCANNING_ERROR ||
 //               type == MSG_BUDGET_VOTE ||
 //               type == MSG_BUDGET_PROPOSAL ||

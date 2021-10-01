@@ -526,113 +526,113 @@ UniValue getmasternodestatus(const JSONRPCRequest& request)
         + activeMasternode.GetStatus());
 }
 
-UniValue getmasternodewinners(const JSONRPCRequest& request)
-{
-    if (request.fHelp || request.params.size() > 3)
-        throw std::runtime_error(
-            "getmasternodewinners ( blocks \"filter\" )\n"
-            "\nPrint the masternode winners for the last n blocks\n"
+//UniValue getmasternodewinners(const JSONRPCRequest& request)
+//{
+//    if (request.fHelp || request.params.size() > 3)
+//        throw std::runtime_error(
+//            "getmasternodewinners ( blocks \"filter\" )\n"
+//            "\nPrint the masternode winners for the last n blocks\n"
 
-            "\nArguments:\n"
-            "1. blocks      (numeric, optional) Number of previous blocks to show (default: 10)\n"
-            "2. filter      (string, optional) Search filter matching MN address\n"
+//            "\nArguments:\n"
+//            "1. blocks      (numeric, optional) Number of previous blocks to show (default: 10)\n"
+//            "2. filter      (string, optional) Search filter matching MN address\n"
 
-            "\nResult (single winner):\n"
-            "[\n"
-            "  {\n"
-            "    \"nHeight\": n,           (numeric) block height\n"
-            "    \"winner\": {\n"
-            "      \"address\": \"xxxx\",    (string) CRW MN Address\n"
-            "      \"nVotes\": n,          (numeric) Number of votes for winner\n"
-            "    }\n"
-            "  }\n"
-            "  ,...\n"
-            "]\n"
+//            "\nResult (single winner):\n"
+//            "[\n"
+//            "  {\n"
+//            "    \"nHeight\": n,           (numeric) block height\n"
+//            "    \"winner\": {\n"
+//            "      \"address\": \"xxxx\",    (string) CRW MN Address\n"
+//            "      \"nVotes\": n,          (numeric) Number of votes for winner\n"
+//            "    }\n"
+//            "  }\n"
+//            "  ,...\n"
+//            "]\n"
 
-            "\nResult (multiple winners):\n"
-            "[\n"
-            "  {\n"
-            "    \"nHeight\": n,           (numeric) block height\n"
-            "    \"winner\": [\n"
-            "      {\n"
-            "        \"address\": \"xxxx\",  (string) CRW MN Address\n"
-            "        \"nVotes\": n,        (numeric) Number of votes for winner\n"
-            "      }\n"
-            "      ,...\n"
-            "    ]\n"
-            "  }\n"
-            "  ,...\n"
-            "]\n"
+//            "\nResult (multiple winners):\n"
+//            "[\n"
+//            "  {\n"
+//            "    \"nHeight\": n,           (numeric) block height\n"
+//            "    \"winner\": [\n"
+//            "      {\n"
+//            "        \"address\": \"xxxx\",  (string) CRW MN Address\n"
+//            "        \"nVotes\": n,        (numeric) Number of votes for winner\n"
+//            "      }\n"
+//            "      ,...\n"
+//            "    ]\n"
+//            "  }\n"
+//            "  ,...\n"
+//            "]\n"
 
-            "\nExamples:\n"
-            + HelpExampleCli("getmasternodewinners", "") + HelpExampleRpc("getmasternodewinners", ""));
+//            "\nExamples:\n"
+//            + HelpExampleCli("getmasternodewinners", "") + HelpExampleRpc("getmasternodewinners", ""));
 
-    if (!masternodeSync.IsSynced()) {
-        throw std::runtime_error("Masternode sync has not yet completed.\n");
-    }
+//    if (!masternodeSync.IsSynced()) {
+//        throw std::runtime_error("Masternode sync has not yet completed.\n");
+//    }
 
-    int nHeight;
-    {
-        LOCK(cs_main);
-        CBlockIndex* pindex = ::ChainActive().Tip();
-        if (!pindex)
-            return 0;
-        nHeight = pindex->nHeight;
-    }
+//    int nHeight;
+//    {
+//        LOCK(cs_main);
+//        CBlockIndex* pindex = ::ChainActive().Tip();
+//        if (!pindex)
+//            return 0;
+//        nHeight = pindex->nHeight;
+//    }
 
-    int nLast = 10;
-    std::string strFilter = "";
+//    int nLast = 10;
+//    std::string strFilter = "";
 
-    if (request.params.size() >= 1)
-        nLast = atoi(request.params[0].get_str());
+//    if (request.params.size() >= 1)
+//        nLast = atoi(request.params[0].get_str());
 
-    if (request.params.size() == 2)
-        strFilter = request.params[1].get_str();
+//    if (request.params.size() == 2)
+//        strFilter = request.params[1].get_str();
 
-    UniValue ret(UniValue::VARR);
+//    UniValue ret(UniValue::VARR);
 
-    for (int i = nHeight - nLast; i < nHeight + 20; i++) {
-        UniValue obj(UniValue::VOBJ);
-        obj.pushKV("nHeight", i);
+//    for (int i = nHeight - nLast; i < nHeight + 20; i++) {
+//        UniValue obj(UniValue::VOBJ);
+//        obj.pushKV("nHeight", i);
 
-        std::string strPayment = GetRequiredPaymentsString(i);
-        if (strFilter != "" && strPayment.find(strFilter) == std::string::npos)
-            continue;
+//        std::string strPayment = GetRequiredPaymentsString(i);
+//        if (strFilter != "" && strPayment.find(strFilter) == std::string::npos)
+//            continue;
 
-        if (strPayment.find(',') != std::string::npos) {
-            UniValue winner(UniValue::VARR);
-            boost::char_separator<char> sep(",");
-            boost::tokenizer<boost::char_separator<char>> tokens(strPayment, sep);
-            for (const std::string& t : tokens) {
-                UniValue addr(UniValue::VOBJ);
-                std::size_t pos = t.find(":");
-                std::string strAddress = t.substr(0, pos);
-                uint64_t nVotes = atoi(t.substr(pos + 1));
-                addr.pushKV("address", strAddress);
-                addr.pushKV("nVotes", nVotes);
-                winner.push_back(addr);
-            }
-            obj.pushKV("winner", winner);
-        } else if (strPayment.find("Unknown") == std::string::npos) {
-            UniValue winner(UniValue::VOBJ);
-            std::size_t pos = strPayment.find(":");
-            std::string strAddress = strPayment.substr(0, pos);
-            uint64_t nVotes = atoi(strPayment.substr(pos + 1));
-            winner.pushKV("address", strAddress);
-            winner.pushKV("nVotes", nVotes);
-            obj.pushKV("winner", winner);
-        } else {
-            UniValue winner(UniValue::VOBJ);
-            winner.pushKV("address", strPayment);
-            winner.pushKV("nVotes", 0);
-            obj.pushKV("winner", winner);
-        }
+//        if (strPayment.find(',') != std::string::npos) {
+//            UniValue winner(UniValue::VARR);
+//            boost::char_separator<char> sep(",");
+//            boost::tokenizer<boost::char_separator<char>> tokens(strPayment, sep);
+//            for (const std::string& t : tokens) {
+//                UniValue addr(UniValue::VOBJ);
+//                std::size_t pos = t.find(":");
+//                std::string strAddress = t.substr(0, pos);
+//                uint64_t nVotes = atoi(t.substr(pos + 1));
+//                addr.pushKV("address", strAddress);
+//                addr.pushKV("nVotes", nVotes);
+//                winner.push_back(addr);
+//            }
+//            obj.pushKV("winner", winner);
+//        } else if (strPayment.find("Unknown") == std::string::npos) {
+//            UniValue winner(UniValue::VOBJ);
+//            std::size_t pos = strPayment.find(":");
+//            std::string strAddress = strPayment.substr(0, pos);
+//            uint64_t nVotes = atoi(strPayment.substr(pos + 1));
+//            winner.pushKV("address", strAddress);
+//            winner.pushKV("nVotes", nVotes);
+//            obj.pushKV("winner", winner);
+//        } else {
+//            UniValue winner(UniValue::VOBJ);
+//            winner.pushKV("address", strPayment);
+//            winner.pushKV("nVotes", 0);
+//            obj.pushKV("winner", winner);
+//        }
 
-        ret.push_back(obj);
-    }
+//        ret.push_back(obj);
+//    }
 
-    return ret;
-}
+//    return ret;
+//}
 
 UniValue getmasternodescores(const JSONRPCRequest& request)
 {
@@ -886,7 +886,7 @@ void RegisterMasternodeCommands(CRPCTable& t)
         { "masternode", "getmasternodeoutputs", &getmasternodeoutputs, {} },
         { "masternode", "listmasternodeconf", &listmasternodeconf, {} },
         { "masternode", "getmasternodestatus", &getmasternodestatus, {} },
-        { "masternode", "getmasternodewinners", &getmasternodewinners, {} },
+//        { "masternode", "getmasternodewinners", &getmasternodewinners, {} },
         { "masternode", "getmasternodescores", &getmasternodescores, {} },
     };
 

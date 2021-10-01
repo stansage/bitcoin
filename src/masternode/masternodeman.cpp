@@ -222,7 +222,7 @@ void CMasternodeMan::DsegUpdate(CNode* pnode, CConnman& connman)
 
     const CNetMsgMaker msgMaker(PROTOCOL_VERSION);
     connman.PushMessage(pnode, CNetMsgMaker(pnode->GetCommonVersion()).Make(NetMsgType::DSEG, CTxIn()));
-    int64_t askAgain = GetTime() + MASTERNODES_DSEG_SECONDS;
+    int64_t askAgain = GetTime() + DsegUpdateInterval();
     mWeAskedForMasternodeList[pnode->addr] = askAgain;
 }
 
@@ -519,15 +519,10 @@ void CMasternodeMan::ProcessMessage(CNode* pfrom, const std::string& strCommand,
         if(!masternodeSync.IsBlockchainSynced()) return;
     }
 
-    if (strCommand == NetMsgType::MNBROADCAST || strCommand == NetMsgType::MNBROADCAST2) {
+    if (strCommand == NetMsgType::MNBROADCAST) {
         SET_CONDITION_FLAG(target);
         CMasternodeBroadcast mnb;
-        if (strCommand == NetMsgType::MNBROADCAST) {
-            //Set to old version for old serialization
-            mnb.lastPing.nVersion = 1;
-        } else {
-            mnb.lastPing.nVersion = 2;
-        }
+        mnb.lastPing.nVersion = 1;
         vRecv >> mnb;
         if (nodeDiag)
             masternodeDiag(&mnb, nullptr);
@@ -542,13 +537,10 @@ void CMasternodeMan::ProcessMessage(CNode* pfrom, const std::string& strCommand,
         }
     }
 
-    if (strCommand == NetMsgType::MNPING || strCommand == NetMsgType::MNPING2) {
+    if (strCommand == NetMsgType::MNPING) {
         SET_CONDITION_FLAG(target);
         CMasternodePing mnp;
-        if (strCommand == NetMsgType::MNPING) {
-            //Set to old version for old serialization
-            mnp.nVersion = 1;
-        }
+        mnp.nVersion = 1;
         vRecv >> mnp;
         if (nodeDiag)
             masternodeDiag(nullptr, &mnp);
@@ -594,7 +586,7 @@ void CMasternodeMan::ProcessMessage(CNode* pfrom, const std::string& strCommand,
                         return;
                     }
                 }
-                int64_t askAgain = GetTime() + MASTERNODES_DSEG_SECONDS;
+                int64_t askAgain = GetTime() + DsegUpdateInterval();
                 mAskedUsForMasternodeList[pfrom->addr] = askAgain;
             }
         }
@@ -713,6 +705,11 @@ bool CMasternodeMan::CheckMnbAndUpdateMasternodeList(CMasternodeBroadcast mnb, i
     }
 
     return true;
+}
+
+int CMasternodeMan::DsegUpdateInterval()
+{
+     return MASTERNODES_DSEG_SECONDS / (size() == 0 ? 60 : 1);
 }
 
 int CMasternodeMan::CountMasternodes(bool fEnabled)
